@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GuardianKist", "GuardianKist\GuardianKist.vcxproj", "{0A7862C6-206D-4722-AC70-87774117C19C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		QR_Release|Win32 = QR_Release|Win32
+		QR_Release|x64 = QR_Release|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A7862C6-206D-4722-AC70-87774117C19C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0A7862C6-206D-4722-AC70-87774117C19C}.Debug|Win32.Build.0 = Debug|Win32
+		{0A7862C6-206D-4722-AC70-87774117C19C}.Debug|x64.ActiveCfg = Debug|x64
+		{0A7862C6-206D-4722-AC70-87774117C19C}.Debug|x64.Build.0 = Debug|x64
+		{0A7862C6-206D-4722-AC70-87774117C19C}.QR_Release|Win32.ActiveCfg = QR_Release|Win32
+		{0A7862C6-206D-4722-AC70-87774117C19C}.QR_Release|Win32.Build.0 = QR_Release|Win32
+		{0A7862C6-206D-4722-AC70-87774117C19C}.QR_Release|x64.ActiveCfg = QR_Release|x64
+		{0A7862C6-206D-4722-AC70-87774117C19C}.QR_Release|x64.Build.0 = QR_Release|x64
+		{0A7862C6-206D-4722-AC70-87774117C19C}.Release|Win32.ActiveCfg = Release|Win32
+		{0A7862C6-206D-4722-AC70-87774117C19C}.Release|Win32.Build.0 = Release|Win32
+		{0A7862C6-206D-4722-AC70-87774117C19C}.Release|x64.ActiveCfg = Release|x64
+		{0A7862C6-206D-4722-AC70-87774117C19C}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3997375F-FA06-4D79-8E30-F8C181DA5B11}
+	EndGlobalSection
+EndGlobal

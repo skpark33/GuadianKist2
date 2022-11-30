@@ -1,0 +1,406 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="HikvisionSDK">
+      <UniqueIdentifier>{6f1435b3-bd19-43d8-a38b-15ed41b310e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ci">
+      <UniqueIdentifier>{68d4e04e-c64b-4fbc-b8c2-bda11bf14612}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ci\libAes256">
+      <UniqueIdentifier>{7af194b5-8ce5-4d22-963f-25d6484ed6f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ci\libBase">
+      <UniqueIdentifier>{710306d0-73f2-46c5-8851-003bdf67e5d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="json">
+      <UniqueIdentifier>{d19f9aff-734a-4d51-b19d-3427141c9643}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="skpark">
+      <UniqueIdentifier>{ebe50eb0-e5fe-4dea-ad86-4b36e7e0eadb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xml">
+      <UniqueIdentifier>{a933a359-c5ef-4f83-a8cd-2ca12c9dfb17}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GuardianApp.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GuardianDlg.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="HikvisionCameraView.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libBase\ciBaseType.h">
+      <Filter>ci\libBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libBase\ciErrObject.h">
+      <Filter>ci\libBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libBase\ciListType.h">
+      <Filter>ci\libBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libBase\ciMacro.h">
+      <Filter>ci\libBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libBase\ciPointer.h">
+      <Filter>ci\libBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libBase\ciStringTokenizer.h">
+      <Filter>ci\libBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libBase\ciStringUtil.h">
+      <Filter>ci\libBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libBase\ciTime.h">
+      <Filter>ci\libBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libBase\ciUtil.h">
+      <Filter>ci\libBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libBase\ciWin32DLL.h">
+      <Filter>ci\libBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libAes256\ciAES256.h">
+      <Filter>ci\libAes256</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libAes256\ciAES256_Base.h">
+      <Filter>ci\libAes256</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libAes256\ciAES256_PRNG.h">
+      <Filter>ci\libAes256</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libAes256\ciByte_Block.h">
+      <Filter>ci\libAes256</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libAes256\ciElCryptoAes256.h">
+      <Filter>ci\libAes256</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libAes256\ciPadding_Type.h">
+      <Filter>ci\libAes256</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libAes256\ciS_Box.h">
+      <Filter>ci\libAes256</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\ci\libAes256\cistdafx.h">
+      <Filter>ci\libAes256</Filter>
+    </ClInclude>
+    <ClInclude Include="HikvisionSDK\DataType.h">
+      <Filter>HikvisionSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="HikvisionSDK\DecodeCardSdk.h">
+      <Filter>HikvisionSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="HikvisionSDK\HCNetSDK.h">
+      <Filter>HikvisionSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="HikvisionSDK\plaympeg4.h">
+      <Filter>HikvisionSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\cjson\cJSON.h">
+      <Filter>json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\xml\tinystr.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\xml\tinyxml.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\xml\XmlBase.h">
+      <Filter>xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\AlarmInfo.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\common.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\GuardianConfig.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\MyStatic.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\PictureEx.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\ReinForceFR.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\Statistics.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\TraceLog.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\Weather.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\WindowCapture.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\curl_httpclient.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\EzvizDDNSAPI.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\MsgPopupDlg.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="HotKeyDlg.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\HoverButton.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="FacingDlg.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\skpark\Crc32Static.h">
+      <Filter>skpark</Filter>
+    </ClInclude>
+    <ClInclude Include="TimePlate.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketServer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketClient.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GuardianDlg.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GuardianApp.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="HikvisionCameraView.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ci\libBase\ciErrObject.cpp">
+      <Filter>ci\libBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ci\libBase\ciStringTokenizer.cpp">
+      <Filter>ci\libBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ci\libBase\ciStringUtil.cpp">
+      <Filter>ci\libBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ci\libBase\ciTime.cpp">
+      <Filter>ci\libBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ci\libBase\ciUtil.cpp">
+      <Filter>ci\libBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ci\libBase\ciWin32DLL.cpp">
+      <Filter>ci\libBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ci\libAes256\ciAES256.cpp">
+      <Filter>ci\libAes256</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ci\libAes256\ciAES256_Base.cpp">
+      <Filter>ci\libAes256</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ci\libAes256\ciAES256_PRNG.cpp">
+      <Filter>ci\libAes256</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ci\libAes256\ciElCryptoAes256.cpp">
+      <Filter>ci\libAes256</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ci\libAes256\ciS_Box.cpp">
+      <Filter>ci\libAes256</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\cjson\cjson.c">
+      <Filter>json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\xml\tinystr.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\xml\tinyxml.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\xml\tinyxmlerror.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\xml\tinyxmlparser.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\xml\XmlBase.cpp">
+      <Filter>xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\common.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\GuardianConfig.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\MyStatic.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\PictureEx.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\ReinForceFR.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\Statistics.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\Weather.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\WindowCapture.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\curl_httpclient.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\EzvizDDNSAPI.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\MsgPopupDlg.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="HotKeyDlg.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\HoverButton.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="FacingDlg.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\skpark\Crc32Static.cpp">
+      <Filter>skpark</Filter>
+    </ClCompile>
+    <ClCompile Include="TimePlate.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketServer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketClient.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\GuardianApp.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\banner.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_license&amp;server.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Brightness-.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Brightness+.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Camera_web_page.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Close.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Close_All_Window.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Configuration.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Contrast-.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Contrast+.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_ESC.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Full_Camera_window.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Narrow_Screen.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Normal_-Display.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Terminate_All_Program.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\bg.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_ESC_closevideo.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Shrink_window.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Thermal_Display.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\btn_Wide_Screen.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\bg.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\facing.gif">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\nextDisabled.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\nextEnabled.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GuardianApp.rc">
+      <Filter>리소스 파일</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\GuardianApp.rc2">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="ClassDiagram.cd" />
+  </ItemGroup>
+</Project>
