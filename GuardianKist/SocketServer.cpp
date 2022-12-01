@@ -100,6 +100,8 @@ int CSocketServer::Start()
 
 int CSocketServer::Receive()
 {
+	if (ClientSocket == INVALID_SOCKET) return 1;
+
 	int iResult;
 
 	int iSendResult;
@@ -132,7 +134,10 @@ int CSocketServer::Receive()
 
 int CSocketServer::Send(CString& sendStr)
 {
+	if (ClientSocket == INVALID_SOCKET) return 1;
+	TraceLog(("skpark Send(%s)", sendStr));
 	int iSendResult = send(ClientSocket, sendStr, sendStr.GetLength(), 0);
+	TraceLog(("skpark Send(%s)", sendStr));
 	if (iSendResult == SOCKET_ERROR) {
 		TraceLog(("send failed with error: %d\n", WSAGetLastError()));
 		closesocket(ClientSocket);
@@ -145,6 +150,8 @@ int CSocketServer::Send(CString& sendStr)
 
 int CSocketServer::Stop()
 {
+	if (ClientSocket == INVALID_SOCKET) return 1;
+
 	// shutdown the connection since we're done
 	int iResult = shutdown(ClientSocket, SD_SEND);
 	if (iResult == SOCKET_ERROR) {

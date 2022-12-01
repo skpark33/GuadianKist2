@@ -59,35 +59,35 @@
 #define	ALARM_BG_COLOR_MASK		RGB(0xff, 0xd9, 0x28)
 
 #define ALARM_FG_COLOR_1		RGB(0xff,0xd9,0x28)
-#define	ALARM_FONT_1			"Noto Sans KR Bold" 
+#define	ALARM_FONT_1			"Pretendard-Bold" 
 #define ALARM_FONT_SIZE_1		96
 
 #define ALARM_FG_COLOR_2		RGB(0xff,0xd9,0x28)
-#define	ALARM_FONT_2			"Noto Sans KR Bold" 
+#define	ALARM_FONT_2			"Pretendard" 
 #define ALARM_FONT_SIZE_2		80
 
 #define ALARM_FG_COLOR_3		RGB(0xe4,0xe5,0xeb)
-#define	ALARM_FONT_3			"Noto Sans KR Bold" 
-#define ALARM_FONT_SIZE_3		30
+#define	ALARM_FONT_3			"Pretendard-Bold" 
+#define ALARM_FONT_SIZE_3		42
 
 #define ALARM_FG_COLOR_4		RGB(0xe4,0xe5,0xeb)
-#define	ALARM_FONT_4			"Noto Sans KR Black"
-#define ALARM_FONT_SIZE_4		20
+#define	ALARM_FONT_4			"Pretendard-Bold"
+#define ALARM_FONT_SIZE_4		26
 
 //#define	NORMAL_BG_COLOR			RGB(0x21,0x29,0x42)
 #define	NORMAL_BG_COLOR			RGB(0xff,0xff,0xff)
 #define NORMAL_FG_COLOR			RGB(0xff,0xff,0xff)
 
 #define NORMAL_FG_COLOR_1		RGB(0xd6,0xd8,0xe4)
-#define	NORMAL_FONT_1			"Noto Sans KR Black"
-#define NORMAL_FONT_SIZE_1		72
+#define	NORMAL_FONT_1			"Pretendard"
+#define NORMAL_FONT_SIZE_1		66
 
 #define NORMAL_FG_COLOR_2		RGB(0xd6,0xd8,0xe4)
-#define	NORMAL_FONT_2			"Nanum Square R"
+#define	NORMAL_FONT_2			"Pretendard"
 #define NORMAL_FONT_SIZE_2		40
 
 #define NORMAL_FG_COLOR_3		RGB(0xd4,0xd5,0xdb)
-#define	NORMAL_FONT_3			"Noto Sans KR Bold"
+#define	NORMAL_FONT_3			"Pretendard"
 #define NORMAL_FONT_SIZE_3		40
 
 
@@ -110,14 +110,38 @@ typedef struct _ST_EVENT {
 
 enum BG_MODE
 {
-	NONE,
-	INIT1,
-	INIT2,
+	NONE,  // 버튼이 활성화 되기전
+	INIT1,		// 버튼이 활성화 되기전 == 사실상 NONE 과 다를것이 없다.
+	INIT2,  // 버튼이 활성화 된 상태
+	WAIT,  // 버튼을 누른 상태
 	FAIL1,  // 발열  fault
-	FAIL2,  // 발열  fault
-	IDENTIFIED,
-	NEXT,  // 다음단계로 넘어가라
+	FAIL2,  // 신원인식  fault
+	IDENTIFIED,  // 확인이 완료된 상태
+	NEXT,  // 확인이 완료된 후 3초 후,  다음단계로 넘어가라
 };
+
+
+/* State machine 
+
+ init1(init 1 page) -->  얼굴을 디민다 --> init2 (int2 page 버튼 활성화) --> 버튼을 누른다 
+ 1> 발열자의 경우
+ --> fail1 --> 3초후 --> init1
+
+ 2> 발열자가 아닌 경우
+  --> waiting (버튼 비활성화, Waiting 사인) - 신원확인이 끝남
+ 
+
+ 1> 성공으로 끝난경우
+	--> identified(identified page) --> 3초후 --> Next
+ 2)  실패로 끝난 경우
+   --> fail2(fail2 page) --> 3초후 init1
+
+
+
+
+*/
+
+
 
 using namespace std;
 

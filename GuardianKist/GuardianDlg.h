@@ -318,7 +318,7 @@ public:
 	
 	CFacingDlg* m_FacingDlg;
 	bool m_isAniPlay;
-	void StopAnimation();
+	bool StopAnimation();
 	void StartAnimation();
 
 
@@ -333,6 +333,7 @@ public:
 
 	CImage*		m_bgInit1;
 	CImage*		m_bgInit2;
+	CImage*		m_bgWait;
 	CImage*		m_bgFail1;
 	CImage*		m_bgFail2;
 	CImage*		m_bgIdentified;
@@ -340,6 +341,7 @@ public:
 
 	CString		m_bgInitFile1;
 	CString		m_bgInitFile2;
+	CString		m_bgWaitFile;
 	CString		m_bgFailFile1;
 	CString		m_bgFailFile2;
 	CString		m_bgIdentifiedFile;
@@ -350,6 +352,7 @@ public:
 
 	bool LoadBGInit1();
 	bool LoadBGInit2();
+	bool LoadBGWait();
 	bool LoadBGFail1();
 	bool LoadBGFail2();
 	bool LoadBGIdentified();
@@ -357,6 +360,7 @@ public:
 
 	bool DrawBGInit1(CDC& dc);
 	bool DrawBGInit2(CDC& dc);
+	bool DrawBGWait(CDC& dc);
 	bool DrawBGFail1(CDC& dc);
 	bool DrawBGFail2(CDC& dc);
 	bool DrawBGIdentified(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade);
@@ -373,17 +377,17 @@ public:
 
 	bool AreYouReady();
 
-	bool GetNames(DRAW_FACE_MAP& humanMap, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade);
+	bool GetNames(CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade);
+	bool HasNames();
+	bool _GetNames(DRAW_FACE_MAP& humanMap, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade);
 
 	int m_modeCheckCounter;
 
 	void GotoPage(BG_MODE mode, bool redraw = true);
 
 	static UINT StartSocketServer(LPVOID pParam);
-	static UINT TestClient(LPVOID pParam);
 	CString SocketReceived(CString received);
 	CSocketServer* m_socket;
-	CSocketClient* m_test_client;
 	CHoverButton m_btNextDisabled;
 	afx_msg void OnBnClickedBnNextDisabled();
 	CHoverButton m_btNext;

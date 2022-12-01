@@ -213,6 +213,7 @@ CGuardianDlg::CGuardianDlg(CWnd* pParent /*=nullptr*/)
 	, m_logo(0)
 	, m_bgInit1(0)
 	, m_bgInit2(0)
+	, m_bgWait(0)
 	, m_bgFail1(0)
 	, m_bgFail2(0)
 	, m_bgNext(0)
@@ -228,7 +229,6 @@ CGuardianDlg::CGuardianDlg(CWnd* pParent /*=nullptr*/)
 	, m_bgMode(BG_MODE::NONE)
 	, m_modeCheckCounter(0)
 	, m_socket(0)
-	, m_test_client(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -251,6 +251,7 @@ CGuardianDlg::CGuardianDlg(CWnd* pParent /*=nullptr*/)
 
 	m_bgInitFile1 = "init1_bg.png";
 	m_bgInitFile2 = "init2_bg.png";
+	m_bgWaitFile = "wait_bg.png";
 	m_bgFailFile1 = "fail1_bg.png";
 	m_bgFailFile2 = "fail2_bg.png";
 	m_bgNextFile = "next_bg.png";
@@ -472,6 +473,7 @@ BOOL CGuardianDlg::OnInitDialog()
 	//{
 	LoadBGInit1();
 	LoadBGInit2();
+	LoadBGWait();
 	LoadBGFail1();
 	LoadBGFail2();
 	LoadBGNext();
@@ -519,7 +521,7 @@ BOOL CGuardianDlg::OnInitDialog()
 	//m_btNext.EnableWindow(FALSE);
 
 	AfxBeginThread(CGuardianDlg::StartSocketServer, this);
-	AfxBeginThread(CGuardianDlg::TestClient, this);
+	
 	return TRUE;
 }
 
@@ -575,8 +577,8 @@ void CGuardianDlg::InitFont(CDC* pDc)
 	InitFont(m_alarmFont2, pDc, ALARM_FONT_2, ALARM_FONT_SIZE_2);
 	InitFont(m_alarmFont3, pDc, ALARM_FONT_3, ALARM_FONT_SIZE_3);
 	InitFont(m_alarmFont4, pDc, ALARM_FONT_4, ALARM_FONT_SIZE_4);
-	InitFont(m_alarmFont5, pDc, WEATHER_FONT_REGULAR_EN, ALARM_FONT_SIZE_4);
-	InitFont(m_alarmFont6, pDc, WEATHER_FONT_REGULAR_EN, ALARM_FONT_SIZE_2);
+	InitFont(m_alarmFont5, pDc, ALARM_FONT_4, 56);
+	InitFont(m_alarmFont6, pDc, ALARM_FONT_4, 38);
 
 	InitFont(m_normalFont1, pDc, NORMAL_FONT_1, NORMAL_FONT_SIZE_1);
 	InitFont(m_normalFont2, pDc, NORMAL_FONT_2, NORMAL_FONT_SIZE_2);
@@ -630,6 +632,11 @@ void CGuardianDlg::Clear()
 	{
 		m_bgInit2->Destroy();
 		delete m_bgInit2;
+	}
+	if (m_bgWait)
+	{
+		m_bgWait->Destroy();
+		delete m_bgWait;
 	}
 	if (m_bgFail1)
 	{
@@ -812,6 +819,29 @@ void CGuardianDlg::OnTimer(UINT nIDEvent)
 				m_modeCheckCounter++;
 			}
 		}
+		//else if (m_bgMode == BG_MODE::INIT2) {
+		//	if (m_modeCheckCounter >= 6) {
+		//		m_modeCheckCounter = 0;
+		//		// 화면에서 나갔다 들어와 달라는 메시지가 필요함
+		//		GotoPage(BG_MODE::NONE);
+		//	}
+		//	else{
+		//		TraceLog(("skpark timer %d   ", m_modeCheckCounter));
+		//		m_modeCheckCounter++;
+		//	}
+		//}
+		else if (m_bgMode == BG_MODE::NEXT) {
+			// 임시로 3초후에 초기화면으로 돌아오도록 함.  원래는 Socket comon-on 메시지가 올때 돌아와야함,
+			// 나중에 반드시 주석으로 막을 것
+			if (m_modeCheckCounter >= 3) {
+				m_modeCheckCounter = 0;
+				GotoPage(BG_MODE::NONE);
+			}
+			else{
+				TraceLog(("skpark timer %d   ", m_modeCheckCounter));
+				m_modeCheckCounter++;
+			}
+		}
 		else if(m_bgMode == BG_MODE::FAIL1) {
 			if (m_modeCheckCounter >= 3) {
 				m_modeCheckCounter = 0;
@@ -841,10 +871,20 @@ void CGuardianDlg::OnTimer(UINT nIDEvent)
 			}
 			else
 			{
-				StopAnimation();
-				// 여기서 WAIT 모드를 해제하고 IDENTIFIDED 로 가거나 FAIL 로 가야한다.
-				if (m_bgMode == BG_MODE::INIT2) {
-					GotoPage(BG_MODE::FAIL2);
+				if (StopAnimation()) {
+					// 여기서 WAIT 모드를 해제하고 IDENTIFIDED 로 가거나 FAIL 로 가야한다.
+					if (m_bgMode == BG_MODE::WAIT) {
+						TraceLog(("skpark Animation Stopped"));
+						if (HasNames()) {
+							TraceLog(("HasNames !!!"));
+							GotoPage(BG_MODE::IDENTIFIED);
+						}
+						else {
+							TraceLog(("Has No Names !!!"));
+							GotoPage(BG_MODE::FAIL2);
+						}
+					}
+					TraceLog(("skpark Animation Stopped 2 %d", m_bgMode));
 				}
 			}
 			
@@ -2265,47 +2305,6 @@ void CGuardianDlg::OnPaint()
 	TraceLog(("DrawOnPaint()"))
 	CPaintDC dc(this); // device context for painting
 	
-	//if (m_config->m_is_hiden_camera)
-	//{
-	//	CString temperature;
-	//	CString humanName;
-	//	bool isFever(false);
-	//	int nMaskLevel(-1);
-
-	//	bool abnormalHumanFounded = GetLastMainAlarmInfo(temperature, humanName, isFever, nMaskLevel);
-	//	bool existFeverAlarm = ExistFeverAlarm();
-	//	if (abnormalHumanFounded || existFeverAlarm)
-	//	{
-	//		DRAW_FACE_MAP humanList;
-	//		int imageCount = GetMainAlarmImageInfoList(humanList);
-	//		//DrawAbnormal(dcMem, humanList, imageCount, existFeverAlarm, nMaskLevel, temperature);
-
-	//		if (existFeverAlarm) {
-	//			this->KeyboardSimulator("CTRL+2");
-	//		}
-	//		else {
-	//			if (nMaskLevel == 0) {
-	//				this->KeyboardSimulator("CTRL+3");
-	//			}
-	//			else {
-	//				TraceLog(("OnPaint >>> SKIP!!! Something wrong"));
-	//				return;
-	//			}
-	//		}
-	//	}
-	//	else
-	//	{
-	//		this->m_lastFaceLeft = 0;
-	//		this->KeyboardSimulator(m_config->m_useQR ? "CTRL+4" : "CTRL+1");
-	//		//DrawNormal(dcMem);
-	//	}
-	//	if (IsFRRetryType())
-	//	{
-	//		//DrawRetryFaces(dcMem);
-	//	}
-	//	return;
-	//}
-
 	// 깜빡임 방지 코드 start
 	CRect rect;
 	this->GetClientRect(&rect);
@@ -2317,75 +2316,8 @@ void CGuardianDlg::OnPaint()
 	CBitmap* pOldBitmap = dcMem.SelectObject(&bitmap);
 	// 깜박임 방지 코드 end
 
-	
-
-	//if (this->m_config->m_use_weather) {
-	//	CImage* aImage = LoadBackgroundWeather(m_weatherProvider.m_weatherIcon);
-	//	if (aImage == NULL || !aImage->BitBlt(dcMem.m_hDC, 0, 0)) 
-	//	{
-	//		TraceLog(("OnEraseBkgnd >>> 바탕 이미지 그리기 실패!!!"));
-	//	}
-	//}
-
-	CString temperature;
-	CString humanName;
-	bool isFever(false);
-	int nMaskLevel(-1);
-
-	DRAW_FACE_MAP humanMap;
-	int imageCount = GetMainAlarmImageInfoList(humanMap);
-	COLORREF foreColor	= NORMAL_FG_COLOR;
-	COLORREF rectColor		= NORMAL_BG_COLOR;
-	bool isDrawFaceCase = false;
-
-	bool abnormalHumanFounded = GetLastMainAlarmInfo(temperature, humanName, isFever, nMaskLevel);
-	bool existFeverAlarm = ExistFeverAlarm();
-	if (abnormalHumanFounded || existFeverAlarm)
-	{
-		//if (DrawAbnormal(dcMem, imageCount, existFeverAlarm, nMaskLevel, temperature))
-		//{
-		//	foreColor = ALARM_FG_COLOR_4;
-		//	rectColor = ALARM_FG_COLOR_2;
-		//	isDrawFaceCase = true;
-		//}
-	}
-	else
-	{
-
-
-		this->m_lastFaceLeft = 0;
-		//DrawNormal(dcMem);
-		if (m_config->m_record_all)
-		{
-			TraceLog(("skpark record_all Case(%d)", imageCount));
-			isDrawFaceCase = true;
-		}
-	}
-
-
-	//if (IsFRRetryType() || IsFRWatchType())
-	//{
-	//	DrawRetryBackground(dcMem);
-	//}
-
-	bool hasName = false;
 	CString aCurrentTemp, aMainAlarmName, aMainAlarmGrade;
-	// 먼저 background 를 다 그리고 나서, face를 그려야 한다.
-	if (isDrawFaceCase)
-	{
-		//if (DrawFaces(dcMem, humanMap, rectColor, foreColor) == 0)
-		//{
-		//	m_lastFaceLeft = 0;
-		//}
-		hasName = GetNames(humanMap, aCurrentTemp, aMainAlarmName, aMainAlarmGrade);
-
-	}
-
-	if (!hasName)
-	{
-		//DrawRetryFaces(dcMem);
-		hasName = GetNames(m_retrylFaces, aCurrentTemp, aMainAlarmName, aMainAlarmGrade);
-	}
+	bool hasName = GetNames(aCurrentTemp, aMainAlarmName, aMainAlarmGrade);
 
 	if (hasName) {
 		TraceLog(("skpark hasName %s", aMainAlarmName));
@@ -2393,13 +2325,15 @@ void CGuardianDlg::OnPaint()
 	}
 
 	DrawBG(dcMem, aCurrentTemp, aMainAlarmName, aMainAlarmGrade);
-	//DrawLogo(dcMem);
+	DrawRetryFaces(dcMem);
+
 
 	//깜박임 방지 코드 start
 	pDC->BitBlt(rect.left, rect.top, rect.Width(), rect.Height(), &dcMem, 0, 0, SRCCOPY);
 	dcMem.SelectObject(pOldBitmap);
 	//깜박임 방지 코드 end
 }
+
 
 bool CGuardianDlg::DrawAbnormal(CDC& dc, /*DRAW_FACE_MAP& humanMap, */int imageCount, bool isFever, int nMaskLevel, CString& temperature)
 {
@@ -2618,28 +2552,8 @@ int CGuardianDlg::DrawFaces(CDC& dc, DRAW_FACE_MAP& humanMap,
 				// KIST 의 경우 Retry 결과도 점수가 높지 않으면 안나와야 한다.
 				continue;
 			}
-
-		
 			if (ele->m_humanName.IsEmpty()) {
 				continue;
-			}
-
-			// 이름 가운데를  * 로 치환한다.
-			TraceLog(("human = %s, %d grade=%s,", ele->m_humanName, ele->m_humanName.GetLength(), ele->m_grade));
-
-			if (ele->m_humanName.GetLength() >= 6) {
-				TraceLog(("human = %s*%s", ele->m_humanName.Mid(0, 2), ele->m_humanName.Mid(4)));
-				CString temp = ele->m_humanName.Mid(0, 2);
-				temp += "*";
-				temp += ele->m_humanName.Mid(4);
-				ele->m_humanName = temp;
-			}
-			else if (ele->m_humanName.GetLength() >= 4) {
-				TraceLog(("human = %s*", ele->m_humanName.Mid(0, 2)));
-				CString temp = ele->m_humanName.Mid(0, 2);
-				temp += "*";
-				ele->m_humanName = temp;
-
 			}
 		}
 
@@ -2775,7 +2689,7 @@ void CGuardianDlg::DrawRetryFaces(CDC& dc)
 	m_retry_cs.Lock();
 	TraceLog(("DrawRetryFaces"));
 	DRAW_FACE_MAP::iterator itr;
-	DrawFaces(dc, m_retrylFaces, NORMAL_BG_COLOR, RGB(0xff, 0xff, 0xff), m_lastFaceLeft);
+	//DrawFaces(dc, m_retrylFaces, NORMAL_BG_COLOR, RGB(0xff, 0xff, 0xff), m_lastFaceLeft);
 	for (itr = m_retrylFaces.begin(); itr != m_retrylFaces.end(); itr++)
 	{
 		// 여기서, PICT.jpg 로 복사하고, INFO.ini 를 제작해야 한다.
@@ -3693,10 +3607,6 @@ void CGuardianDlg::OnDestroy()
 	showTaskbar(true);
 
 	CloseLog();
-	if (m_test_client) {
-		delete m_test_client;
-	}
-
 	if (m_socket) {
 		delete m_socket;
 	}
@@ -4409,11 +4319,11 @@ void CGuardianDlg::CloseLog()
 	}
 }
 
-void CGuardianDlg::StopAnimation()
+bool CGuardianDlg::StopAnimation()
 {
 	if (m_isAniPlay)
 	{
-		TraceLog(("StopAnimation"));
+		TraceLog(("skpark StopAnimation"));
 		if (m_FacingDlg)
 		{
 			//m_FacingDlg->DestroyWindow(); 
@@ -4422,8 +4332,10 @@ void CGuardianDlg::StopAnimation()
 			m_FacingDlg->ShowWindow(SW_HIDE);
 			SetFocus();
 		}
+		m_isAniPlay = false;
+		return true;
 	}
-	m_isAniPlay = false;
+	return false;
 }
 void CGuardianDlg::StartAnimation()
 {
@@ -4432,7 +4344,7 @@ void CGuardianDlg::StartAnimation()
 		TraceLog(("StartAnimation(%d)", m_videoHeight+m_videoTop));
 		if (m_FacingDlg == NULL)
 		{
-			m_FacingDlg = new CFacingDlg(m_videoLeft, m_videoHeight + m_videoTop, m_videoWidth, this);
+			m_FacingDlg = new CFacingDlg(180, m_videoHeight + m_videoTop + 50, 720, this);
 			m_FacingDlg->Create(IDD_FACING_DLG);
 		}
 		m_isAniPlay = true;
@@ -4444,9 +4356,9 @@ void CGuardianDlg::StartAnimation()
 void CGuardianDlg::InitWatch()
 {
 	int w = 400;
-	int h = 150;
+	int h = 135;
 	int x = m_letterLeft;
-	int y = m_videoTop - h;
+	int y = m_videoTop - h - 20;
 
 	CRect rect_contents(x,y,x+w,y+h);
 
@@ -4556,6 +4468,7 @@ bool  CGuardianDlg::_DrawBG(CDC& dc, CImage* image)
 
 bool CGuardianDlg::LoadBGInit1() { return _LoadBG(m_bgInitFile1, m_bgInit1); }
 bool CGuardianDlg::LoadBGInit2() { return _LoadBG(m_bgInitFile2, m_bgInit2); }
+bool CGuardianDlg::LoadBGWait() { return _LoadBG(m_bgWaitFile, m_bgWait); }
 bool CGuardianDlg::LoadBGFail1() { return _LoadBG(m_bgFailFile1, m_bgFail1); }
 bool CGuardianDlg::LoadBGFail2() { return _LoadBG(m_bgFailFile2, m_bgFail2); }
 bool CGuardianDlg::LoadBGNext() { return _LoadBG(m_bgNextFile, m_bgNext);  }
@@ -4563,6 +4476,7 @@ bool CGuardianDlg::LoadBGIdentified() { return _LoadBG(m_bgIdentifiedFile, m_bgI
 
 bool CGuardianDlg::DrawBGInit1(CDC& dc) { return _DrawBG(dc, m_bgInit1); }
 bool CGuardianDlg::DrawBGInit2(CDC& dc) { return _DrawBG(dc, m_bgInit2); }
+bool CGuardianDlg::DrawBGWait(CDC& dc) { return _DrawBG(dc, m_bgWait); }
 bool CGuardianDlg::DrawBGFail1(CDC& dc) { return _DrawBG(dc, m_bgFail1); }
 bool CGuardianDlg::DrawBGFail2(CDC& dc) { return _DrawBG(dc, m_bgFail2); }
 bool CGuardianDlg::DrawBGNext(CDC& dc) { return _DrawBG(dc, m_bgNext); }
@@ -4570,8 +4484,8 @@ bool CGuardianDlg::DrawBGIdentified(CDC& dc, CString& pCurrentTemp, CString& pMa
 { 
 	bool retval = _DrawBG(dc, m_bgIdentified); 
 	TraceLog(("DrawBGIdentified(%s, %d)", pMainAlarmName, m_videoTop + m_videoHeight + 400));
-	WriteSingleLine(pMainAlarmName, &dc, m_alarmFont3, RGB(0x00, 0x00, 0x00), m_videoTop + m_videoHeight + 400, 60, DT_CENTER, m_videoLeft, m_videoWidth);
-	WriteSingleLine(pMainAlarmGrade, &dc, m_alarmFont3, RGB(0x00, 0x00, 0x00), m_videoTop + m_videoHeight + 460, 60, DT_CENTER, m_videoLeft, m_videoWidth);
+	WriteSingleLine(pMainAlarmName, &dc, m_alarmFont5, RGB(0x11, 0x11, 0x11), m_videoTop + m_videoHeight + 300, 64, DT_LEFT, 190, 700);
+	WriteSingleLine(pMainAlarmGrade, &dc, m_alarmFont6, RGB(0x11, 0x11, 0x11), m_videoTop + m_videoHeight + 392, 48, DT_LEFT, 190, 700);
 
 	return retval;
 }
@@ -4593,6 +4507,7 @@ bool CGuardianDlg::DrawBG(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmNam
 	case BG_MODE::NONE:    DrawBGInit1(dc);  break;
 	case BG_MODE::INIT1:    DrawBGInit1(dc); break;
 	case BG_MODE::INIT2:    DrawBGInit2(dc);	 break;
+	case BG_MODE::WAIT:    DrawBGWait(dc);	 break;
 	case BG_MODE::FAIL1:   DrawBGFail1(dc); break;
 	case BG_MODE::FAIL2:   DrawBGFail2(dc); break;
 	case BG_MODE::NEXT:   DrawBGNext(dc);  break;
@@ -4600,13 +4515,14 @@ bool CGuardianDlg::DrawBG(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmNam
 	default: DrawBGInit1(dc);
 	}
 
-	if (m_bgMode == BG_MODE::NONE || m_bgMode == BG_MODE::INIT1) {
-		m_btNext.ShowWindow(SW_HIDE);
-		m_btNextDisabled.ShowWindow(SW_SHOW);
-	}
-	else if (m_bgMode == BG_MODE::INIT2) {
+	if (m_bgMode == BG_MODE::INIT2) {
 		m_btNext.ShowWindow(SW_SHOW);
 		m_btNextDisabled.ShowWindow(SW_HIDE);
+	}
+	else if (m_bgMode == BG_MODE::WAIT || m_bgMode == BG_MODE::INIT1 || m_bgMode == BG_MODE:: NONE || m_bgMode == BG_MODE::FAIL1)
+	{
+		m_btNext.ShowWindow(SW_HIDE);
+		m_btNextDisabled.ShowWindow(SW_SHOW);
 	}
 	else {
 		m_btNext.ShowWindow(SW_HIDE);
@@ -4639,7 +4555,10 @@ bool CGuardianDlg::AreYouReady()
 void CGuardianDlg::OnBnClickedBnNext()
 {
 	m_reserved_cs.Lock();
+	
 	RESERVED_MAP::iterator itr;
+	
+	// 발열 알람을 먼저 검사하고 이름을 검사해야 한다.
 	for (itr = m_reservedMap.begin(); itr != m_reservedMap.end(); itr++) {
 		TraceLog(("m_reservedMap key = %d", itr->first));
 		m_cs.Lock();
@@ -4653,14 +4572,31 @@ void CGuardianDlg::OnBnClickedBnNext()
 
 		if (ele->m_alarmLevel == 1) {
 			m_cs.Unlock();
+			m_reserved_cs.Unlock();
+			m_reservedMap.clear();
 			GotoPage(BG_MODE::FAIL1);
-			
-			break;
+			return;
 		}
+		m_cs.Unlock();
+	}
+
+	// 이름을 검사한다.
+	for (itr = m_reservedMap.begin(); itr != m_reservedMap.end(); itr++) {
+		TraceLog(("m_reservedMap key = %d", itr->first));
+		m_cs.Lock();
+		HUMAN_INFOMAP::iterator jtr = m_mainAlarmInfoMap.find(itr->first);
+		if (jtr == m_mainAlarmInfoMap.end()) {
+			TraceLog(("m_reservedMap (%d) no key founded", itr->first));
+			m_cs.Unlock();
+			continue;
+		}
+		AlarmInfoEle* ele = jtr->second;
 		if (!ele->m_humanName.IsEmpty()) {
 			m_cs.Unlock();
+			m_reserved_cs.Unlock();
+			m_reservedMap.clear();
 			GotoPage(BG_MODE::IDENTIFIED);
-			break;
+			return;
 		}
 		TraceLog(("m_reservedMap (%d) key founded", itr->first));
 		FRRetry::getInstance()->Start(this);
@@ -4672,10 +4608,62 @@ void CGuardianDlg::OnBnClickedBnNext()
 	m_reservedMap.clear();
 	m_reserved_cs.Unlock();
 
-	GotoPage(BG_MODE::INIT2);
+	GotoPage(BG_MODE::WAIT);
 }
 
-bool CGuardianDlg::GetNames(DRAW_FACE_MAP& humanMap, CString& pCurrentTemp,CString& pMainAlarmName,CString& pMainAlarmGrade)
+bool CGuardianDlg::GetNames(CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade)
+{
+	DRAW_FACE_MAP humanMap;
+	int imageCount = GetMainAlarmImageInfoList(humanMap);
+	bool hasName = false;
+	
+	hasName = _GetNames(humanMap, pCurrentTemp, pMainAlarmName, pMainAlarmGrade);
+	if (!hasName)
+	{
+		m_retry_cs.Lock();
+		hasName = _GetNames(m_retrylFaces, pCurrentTemp, pMainAlarmName, pMainAlarmGrade);
+		m_retry_cs.Unlock();
+	}
+
+	// 이름 가운데를  * 로 치환한다.
+	TraceLog(("human = %s, %d grade=%s,", pMainAlarmName, pMainAlarmName.GetLength(), pMainAlarmGrade));
+
+	if (pMainAlarmName.GetLength() >= 6) {
+		TraceLog(("human = %s*%s", pMainAlarmName.Mid(0, 2), pMainAlarmName.Mid(4)));
+		CString temp = pMainAlarmName.Mid(0, 2);
+		temp += "**";
+		temp += pMainAlarmName.Mid(4);
+		temp += " 님";
+		pMainAlarmName = temp;
+	}
+	else if (pMainAlarmName.GetLength() >= 4) {
+		TraceLog(("human = %s*", pMainAlarmName.Mid(0, 2)));
+		CString temp = pMainAlarmName.Mid(0, 2);
+		temp += "** 님";
+		pMainAlarmName = temp;
+
+	}
+
+	return hasName;
+}
+
+bool CGuardianDlg::HasNames()
+{
+	DRAW_FACE_MAP humanMap;
+	int imageCount = GetMainAlarmImageInfoList(humanMap);
+	bool hasName = false;
+	CString pCurrentTemp, pMainAlarmName, pMainAlarmGrade;
+	hasName = _GetNames(humanMap, pCurrentTemp, pMainAlarmName, pMainAlarmGrade);
+	if (!hasName)
+	{
+		m_retry_cs.Lock();
+		hasName = _GetNames(m_retrylFaces, pCurrentTemp, pMainAlarmName, pMainAlarmGrade);
+		m_retry_cs.Unlock();
+
+	}
+	return hasName;
+}
+bool CGuardianDlg::_GetNames(DRAW_FACE_MAP& humanMap, CString& pCurrentTemp,CString& pMainAlarmName,CString& pMainAlarmGrade)
 {
 	DRAW_FACE_MAP::iterator itr;
 	int len = humanMap.size();
@@ -4714,26 +4702,6 @@ bool CGuardianDlg::GetNames(DRAW_FACE_MAP& humanMap, CString& pCurrentTemp,CStri
 		if (ele->m_humanName.IsEmpty()) {
 			continue;
 		}
-
-		// 이름 가운데를  * 로 치환한다.
-		TraceLog(("human = %s, %d grade=%s,", ele->m_humanName, ele->m_humanName.GetLength(), ele->m_grade));
-
-		if (ele->m_humanName.GetLength() >= 6) {
-			TraceLog(("human = %s*%s", ele->m_humanName.Mid(0, 2), ele->m_humanName.Mid(4)));
-			CString temp = ele->m_humanName.Mid(0, 2);
-			temp += "*";
-			temp += ele->m_humanName.Mid(4);
-			ele->m_humanName = temp;
-		}
-		else if (ele->m_humanName.GetLength() >= 4) {
-			TraceLog(("human = %s*", ele->m_humanName.Mid(0, 2)));
-			CString temp = ele->m_humanName.Mid(0, 2);
-			temp += "*";
-			ele->m_humanName = temp;
-
-		}
-		
-
 		pCurrentTemp = ele->m_currentTemp;
 		pMainAlarmName = ele->m_humanName;
 		pMainAlarmGrade = ele->m_grade ;
@@ -4749,7 +4717,6 @@ void CGuardianDlg::GotoPage(BG_MODE mode, bool redraw) {
 	if (redraw) Invalidate();
 
 	if (mode == BG_MODE::NEXT) {
-		// Send here
 		if (m_socket) {
 			m_socket->Send(CString("come-on"));
 			SetTopMost(false);
@@ -4781,25 +4748,6 @@ CString CGuardianDlg::SocketReceived(CString received)
 	return retval;
 }
 
-UINT CGuardianDlg::TestClient(LPVOID pParam)
-{
-	TraceLog(("TestClient()"));
-
-	CGuardianDlg* thisDlg = (CGuardianDlg*)pParam;
-
-	thisDlg->m_test_client = new CSocketClient();
-	while (1) {
-		if (thisDlg->m_test_client->Connect() == 0){
-			TraceLog(("Connected..."));
-			break;
-		}
-		::Sleep(1000);
-	}
-	thisDlg->m_test_client->Send("come-on");
-	thisDlg->m_test_client->Receive();
-
-	return 0;
-}
 
 
 void CGuardianDlg::OnBnClickedBnNextDisabled()
