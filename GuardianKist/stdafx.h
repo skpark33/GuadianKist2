@@ -110,8 +110,8 @@ typedef struct _ST_EVENT {
 
 enum BG_MODE
 {
-	NONE,  // 버튼이 활성화 되기전
-	INIT1,		// 버튼이 활성화 되기전 == 사실상 NONE 과 다를것이 없다.
+	NONE,  // 버튼이 활성화 되기전, 얼굴감시를 하지 않는다는 점에서 INIT1 과 다르다.
+	INIT1,		// 버튼이 활성화 되기전	
 	INIT2,  // 버튼이 활성화 된 상태
 	WAIT,  // 버튼을 누른 상태
 	FAIL1,  // 발열  fault
@@ -119,6 +119,8 @@ enum BG_MODE
 	IDENTIFIED,  // 확인이 완료된 상태
 	NEXT,  // 확인이 완료된 후 3초 후,  다음단계로 넘어가라
 };
+
+const char* showBGMode(BG_MODE mode);
 
 
 /* State machine 

@@ -14,3 +14,17 @@ CString LoadStringById(UINT nID, CString lang)
 	//	return A2W(strValue);
 	//	return ("ko" == lang ? A2W("℃") : A2W("?"));
 }
+
+const char* showBGMode(BG_MODE mode) {
+	switch (mode) {
+	case 	NONE: return "NONE";
+	case	INIT1: return "INIT1";
+	case	INIT2: return "INIT2";
+	case	WAIT: return "WAIT";
+	case	FAIL1: return "FAIL1";
+	case	FAIL2: return "FAIL2";		
+	case	IDENTIFIED: return "IDENTIFIED";
+	case	NEXT: return "NEXT";
+	}
+	return "UNKNOWN";
+}

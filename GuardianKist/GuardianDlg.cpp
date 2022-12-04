@@ -204,7 +204,7 @@ CGuardianDlg::CGuardianDlg(CWnd* pParent /*=nullptr*/)
 	, m_currentMainAlarmIdx(-1)
 	, m_cameraID(1)
 	, m_isMinimize(false)
-	, m_frManager(0)
+	//, m_frManager(0)
 	, m_videoEnd(984)
 	, m_titleStart(55)
 	, m_letterLeft(83)
@@ -226,7 +226,7 @@ CGuardianDlg::CGuardianDlg(CWnd* pParent /*=nullptr*/)
 	, m_isAniPlay(false)
 	, m_FacingDlg(NULL)
 	, m_isVoiceRunning(false)
-	, m_bgMode(BG_MODE::NONE)
+	, m_bgMode(BG_MODE::INIT1)
 	, m_modeCheckCounter(0)
 	, m_socket(0)
 {
@@ -613,10 +613,10 @@ void CGuardianDlg::Clear()
 	EraseAll();
 	ClearWeaherMap();
 
-	if (m_frManager)
-	{
-		delete this->m_frManager;
-	}
+	//if (m_frManager)
+	//{
+	//	delete this->m_frManager;
+	//}
 
 	if (m_logo)
 	{
@@ -802,15 +802,17 @@ void CGuardianDlg::OnTimer(UINT nIDEvent)
 	switch (nIDEvent)
 	{
 	case KIST_CHECK_TIMER:
-		if ((m_bgMode == BG_MODE::NONE || m_bgMode == BG_MODE::INIT1) && AreYouReady())
+		//if ((m_bgMode == BG_MODE::NONE || m_bgMode == BG_MODE::INIT1) && AreYouReady())
+		if (m_bgMode == BG_MODE::INIT1 && AreYouReady())
 		{
 			TraceLog(("AreYouReady ?  Yes I'm Ready"));
 			GotoPage(BG_MODE::INIT2);
 		}
 		break;
 	case ALARM_CHECK_TIMER: 	// check alarm time
+		TraceLog(("ALARM_CHECK_TIMER(%ul, %d)", now, m_modeCheckCounter));
 		if (m_bgMode == BG_MODE::IDENTIFIED) {
-			if (m_modeCheckCounter >= 3) {
+			if (m_modeCheckCounter >= m_config->m_alarmValidSec) {
 				m_modeCheckCounter = 0;
 				GotoPage(BG_MODE::NEXT);
 			}
@@ -820,7 +822,7 @@ void CGuardianDlg::OnTimer(UINT nIDEvent)
 			}
 		}
 		//else if (m_bgMode == BG_MODE::INIT2) {
-		//	if (m_modeCheckCounter >= 6) {
+		//	if (m_modeCheckCounter >= m_config->m_alarmValidSec * 2) {
 		//		m_modeCheckCounter = 0;
 		//		// 화면에서 나갔다 들어와 달라는 메시지가 필요함
 		//		GotoPage(BG_MODE::NONE);
@@ -830,22 +832,22 @@ void CGuardianDlg::OnTimer(UINT nIDEvent)
 		//		m_modeCheckCounter++;
 		//	}
 		//}
-		else if (m_bgMode == BG_MODE::NEXT) {
-			// 임시로 3초후에 초기화면으로 돌아오도록 함.  원래는 Socket comon-on 메시지가 올때 돌아와야함,
-			// 나중에 반드시 주석으로 막을 것
-			if (m_modeCheckCounter >= 3) {
-				m_modeCheckCounter = 0;
-				GotoPage(BG_MODE::NONE);
-			}
-			else{
-				TraceLog(("skpark timer %d   ", m_modeCheckCounter));
-				m_modeCheckCounter++;
-			}
-		}
+		//else if (m_bgMode == BG_MODE::NEXT) {
+		//	// 임시로 3초후에 초기화면으로 돌아오도록 함.  원래는 Socket comon-on 메시지가 올때 돌아와야함,
+		//	// 나중에 반드시 주석으로 막을 것
+		//	if (m_modeCheckCounter >= m_config->m_alarmValidSec) {
+		//		m_modeCheckCounter = 0;
+		//		GotoPage(BG_MODE::NONE);
+		//	}
+		//	else{
+		//		TraceLog(("skpark timer %d   ", m_modeCheckCounter));
+		//		m_modeCheckCounter++;
+		//	}
+		//}
 		else if(m_bgMode == BG_MODE::FAIL1) {
-			if (m_modeCheckCounter >= 3) {
+			if (m_modeCheckCounter >= m_config->m_alarmValidSec) {
 				m_modeCheckCounter = 0;
-				GotoPage(BG_MODE::NONE);
+				GotoPage(BG_MODE::INIT1);
 			}
 			else{
 				TraceLog(("skpark timer %d   ", m_modeCheckCounter));
@@ -853,9 +855,9 @@ void CGuardianDlg::OnTimer(UINT nIDEvent)
 			}
 		}
 		else if (m_bgMode == BG_MODE::FAIL2) {
-			if (m_modeCheckCounter >= 3) {
+			if (m_modeCheckCounter >= m_config->m_alarmValidSec) {
 				m_modeCheckCounter = 0;
-				GotoPage(BG_MODE::NONE);
+				GotoPage(BG_MODE::INIT1);
 			}
 			else{
 				TraceLog(("skpark timer %d   ", m_modeCheckCounter));
@@ -876,8 +878,8 @@ void CGuardianDlg::OnTimer(UINT nIDEvent)
 					if (m_bgMode == BG_MODE::WAIT) {
 						TraceLog(("skpark Animation Stopped"));
 						if (HasNames()) {
-							TraceLog(("HasNames !!!"));
-							GotoPage(BG_MODE::IDENTIFIED);
+							TraceLog(("skpark HasNames !!!"));
+							GotoPage(BG_MODE::IDENTIFIED);  // AFTER STOP ANIMATION
 						}
 						else {
 							TraceLog(("Has No Names !!!"));
@@ -894,15 +896,15 @@ void CGuardianDlg::OnTimer(UINT nIDEvent)
 		//	TraceLog(("hidden=%d", m_config->m_is_hiden_camera));
 		//	SetTopMost(true);
 		//}
-		if (m_currentMainAlarmIdx >= 0)
-		{
-			int deleted = EraseOldMainAlarm(now);
-			deleted += EraseOldRetryFaces(now);
-			if (deleted > 0)
-			{
-				Invalidate();
-			}
-		}
+		//if (m_currentMainAlarmIdx >= 0)
+		//{
+		//	int deleted = EraseOldMainAlarm(now);
+		//	deleted += EraseOldRetryFaces(now);
+		//	if (deleted > 0)
+		//	{
+		//		Invalidate();
+		//	}
+		//}
 		counter++;
 		if (counter % 60 == 1) {
 			// 매 1분마다  시계를 다시 그린다.
@@ -997,6 +999,15 @@ LRESULT CGuardianDlg::OnEventUpdateMessage(WPARAM /*wParam*/, LPARAM /*lParam*/)
 void CGuardianDlg::ProThermometryAlarm(float temperature, Mat cropFace, int maskLevel, int alarmLevel)
 {
 	TraceLog(("~~~~~~~~~~~~~~~~~~~~~~~~~~~ [ ProThermometryAlarm ] ~~~~~~~~~~~~~~~~~~~~~~~~~~~"));
+
+	if (m_bgMode != BG_MODE::INIT1  && m_bgMode != BG_MODE::INIT2) {
+		TraceLog(("~~~~~~~~~~~~~~~~~~~ [ BG_MODE (%s) is not init1 or none ] ~~~~~~~~~~~~~~~~~~", showBGMode(m_bgMode)));
+		//Invalidate();
+		return;
+	}
+
+
+
 	CString szPointInfo = "[ROOT]";
 	char szInfoBuf[2048] = { 0 };
 	//		int alarmLevel = (temperature < m_feverTmpr ? 0 : 1);
@@ -1855,28 +1866,46 @@ void CGuardianDlg::PushMainAlarm(AlarmInfoEle* ele)
 	m_cs.Unlock();
 }
 
-int CGuardianDlg::EraseOldMainAlarm(time_t now)
+//int CGuardianDlg::EraseOldMainAlarm(time_t now)
+//{
+//	//	TraceLog((" ================================== EraseOldMainAlarm =================================="));
+//	int retval = 0;
+//	m_cs.Lock();
+//	HUMAN_INFOMAP::iterator itr;
+//	for (itr = m_mainAlarmInfoMap.begin(); itr != m_mainAlarmInfoMap.end();) {
+//		AlarmInfoEle* aInfo = itr->second;
+//		if (aInfo->m_currentTempTime > 0 && now - aInfo->m_currentTempTime > m_config->m_alarmValidSec) {
+//			delete aInfo;
+//			TraceLog(("skparkAPI EraseOldMainAlarm[%d] erased >>> m_currentTempTime[%d] m_alarmValidSec[%d]",
+//				itr->first, now - aInfo->m_currentTempTime, m_config->m_alarmValidSec))
+//				m_mainAlarmInfoMap.erase(itr++);
+//			retval++;
+//		}
+//		else {
+//			++itr;
+//		}
+//	}
+//	m_cs.Unlock();
+//	return retval;
+//}
+
+int CGuardianDlg::EraseAllMainAlarm()
 {
-	//	TraceLog((" ================================== EraseOldMainAlarm =================================="));
+	TraceLog(("EraseAllMainAlarm()"));
 	int retval = 0;
 	m_cs.Lock();
 	HUMAN_INFOMAP::iterator itr;
-	for (itr = m_mainAlarmInfoMap.begin(); itr != m_mainAlarmInfoMap.end();) {
+	for (itr = m_mainAlarmInfoMap.begin(); itr != m_mainAlarmInfoMap.end(); itr++) {
 		AlarmInfoEle* aInfo = itr->second;
-		if (aInfo->m_currentTempTime > 0 && now - aInfo->m_currentTempTime > m_config->m_alarmValidSec) {
-			delete aInfo;
-			TraceLog(("skparkAPI EraseOldMainAlarm[%d] erased >>> m_currentTempTime[%d] m_alarmValidSec[%d]",
-				itr->first, now - aInfo->m_currentTempTime, m_config->m_alarmValidSec))
-				m_mainAlarmInfoMap.erase(itr++);
-			retval++;
-		}
-		else {
-			++itr;
-		}
+		delete aInfo;
+		retval++;
 	}
+	m_mainAlarmInfoMap.clear();
 	m_cs.Unlock();
+	TraceLog(("EraseAllMainAlarm() %d deleted", retval));
 	return retval;
 }
+
 
 bool CGuardianDlg::ExistFeverAlarm()
 {
@@ -1898,27 +1927,42 @@ bool CGuardianDlg::ExistFeverAlarm()
 	return FALSE;
 }
 
-int CGuardianDlg::EraseOldRetryFaces(time_t now)
+//int CGuardianDlg::EraseOldRetryFaces(time_t now)
+//{
+//	int retval = 0;
+//	m_retry_cs.Lock();
+//	DRAW_FACE_MAP::iterator itr;
+//	for (itr = m_retrylFaces.begin(); itr != m_retrylFaces.end();)
+//	{
+//		AlarmInfoEle* aInfo = itr->second;
+//		if (aInfo->m_currentTempTime > 0 && now - aInfo->m_currentTempTime > m_config->m_alarmValidSec)
+//		{
+//			delete aInfo;
+//			m_retrylFaces.erase(itr++);
+//			retval++;
+//		}
+//		else{
+//			++itr;
+//		}
+//	}
+//	m_retry_cs.Unlock();
+//	return retval;
+//}
+int CGuardianDlg::EraseAllRetryFaces()
 {
 	int retval = 0;
 	m_retry_cs.Lock();
 	DRAW_FACE_MAP::iterator itr;
-	for (itr = m_retrylFaces.begin(); itr != m_retrylFaces.end();)
+	for (itr = m_retrylFaces.begin(); itr != m_retrylFaces.end();itr++)
 	{
 		AlarmInfoEle* aInfo = itr->second;
-		if (aInfo->m_currentTempTime > 0 && now - aInfo->m_currentTempTime > m_config->m_alarmValidSec)
-		{
 			delete aInfo;
-			m_retrylFaces.erase(itr++);
-			retval++;
-		}
-		else{
-			++itr;
-		}
 	}
+	m_retrylFaces.clear();
 	m_retry_cs.Unlock();
 	return retval;
 }
+
 
 void CGuardianDlg::EraseAll()
 {
@@ -2319,9 +2363,9 @@ void CGuardianDlg::OnPaint()
 	CString aCurrentTemp, aMainAlarmName, aMainAlarmGrade;
 	bool hasName = GetNames(aCurrentTemp, aMainAlarmName, aMainAlarmGrade);
 
-	if (hasName) {
+	if (m_bgMode == BG_MODE::WAIT && hasName) {
 		TraceLog(("skpark hasName %s", aMainAlarmName));
-		GotoPage(BG_MODE::IDENTIFIED, false);
+		GotoPage(BG_MODE::IDENTIFIED, false);    // BG_MODE::WAIT 
 	}
 
 	DrawBG(dcMem, aCurrentTemp, aMainAlarmName, aMainAlarmGrade);
@@ -2916,11 +2960,6 @@ bool CGuardianDlg::ParseResult(bool& isMainAlarm, bool& maskFace, CString& face_
 			TraceLog(("json format error 6 score"));
 			continue;
 		}
-		float fscore = score->valuedouble;
-		if (fscore < m_config->m_face_score_limit)
-		{
-			continue;
-		}
 		retval = true;
 		if (m_currentMainAlarmIdx < 0)
 		{
@@ -2939,6 +2978,15 @@ bool CGuardianDlg::ParseResult(bool& isMainAlarm, bool& maskFace, CString& face_
 		if (room != NULL)
 		{
 			strRoom = room->valuestring;
+		}
+		float fscore = score->valuedouble;
+		if (fscore < m_config->m_face_score_limit)
+		{
+			//점수가 낮더라도 맵에는 넣고 봐야 한다.  단, 이름을 지운다.
+			strRoom = strName;  // 그렇다고 이름을 완전히 안볼 수는 없으니, strRoom 에다가 백업해 놓는다.
+			strName = "";
+			retval = false;
+			TraceLog(("found but too low score(%f,%s)", fscore, strName));
 		}
 		SetMainAlarmInfo(strName, strGrade, strRoom);
 		TraceLog(("face_api_result >>> name(%s) grade(%s)  room(%s)", strName, strGrade, strRoom));
@@ -4499,6 +4547,13 @@ void CGuardianDlg::PushReservedMap(CString eventId)
 	m_reserved_cs.Unlock();
 }
 
+void CGuardianDlg::EraseAllReservedMap()
+{
+	m_reserved_cs.Lock();
+	TraceLog(("EraseAllReservedMap(%d)", m_reservedMap.size()));
+	m_reservedMap.clear();
+	m_reserved_cs.Unlock();
+}
 
 bool CGuardianDlg::DrawBG(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade)
 {
@@ -4580,7 +4635,6 @@ void CGuardianDlg::OnBnClickedBnNext()
 		m_cs.Unlock();
 	}
 
-	// 이름을 검사한다.
 	for (itr = m_reservedMap.begin(); itr != m_reservedMap.end(); itr++) {
 		TraceLog(("m_reservedMap key = %d", itr->first));
 		m_cs.Lock();
@@ -4590,21 +4644,24 @@ void CGuardianDlg::OnBnClickedBnNext()
 			m_cs.Unlock();
 			continue;
 		}
+		TraceLog(("m_reservedMap (%d) key founded", itr->first));
 		AlarmInfoEle* ele = jtr->second;
 		if (!ele->m_humanName.IsEmpty()) {
 			m_cs.Unlock();
 			m_reserved_cs.Unlock();
 			m_reservedMap.clear();
-			GotoPage(BG_MODE::IDENTIFIED);
+			TraceLog(("skpark Push Next Button"));
+			GotoPage(BG_MODE::IDENTIFIED);    // Push Next Button
 			return;
 		}
-		TraceLog(("m_reservedMap (%d) key founded", itr->first));
+		TraceLog(("human not matched(%d)", itr->first));
 		FRRetry::getInstance()->Start(this);
 		CString eventId;
 		eventId.Format("[%s_x]", ele->m_eventId.Mid(0, ele->m_eventId.GetLength() - 2));
 		FRRetry::getInstance()->PushEventQ(eventId, (ele->m_alarmLevel == 1), atof(ele->m_currentTemp));
 		m_cs.Unlock();
 	}
+
 	m_reservedMap.clear();
 	m_reserved_cs.Unlock();
 
@@ -4714,11 +4771,20 @@ bool CGuardianDlg::_GetNames(DRAW_FACE_MAP& humanMap, CString& pCurrentTemp,CStr
 
 void CGuardianDlg::GotoPage(BG_MODE mode, bool redraw) {
 	m_bgMode = mode;
+
+	if (mode == BG_MODE::NONE || mode == BG_MODE::INIT1) {
+		// NONE 으로 갈때는 보존된 얼굴 기록을 지워야 한다.
+		EraseAllMainAlarm();
+		EraseAllRetryFaces();
+		EraseAllReservedMap();
+	}
+
 	if (redraw) Invalidate();
 
 	if (mode == BG_MODE::NEXT) {
 		if (m_socket) {
 			m_socket->Send(CString("come-on"));
+			GotoPage(BG_MODE::NONE);
 			SetTopMost(false);
 		}
 	}
@@ -4743,6 +4809,7 @@ CString CGuardianDlg::SocketReceived(CString received)
 
 	if (received == "come-on") {
 		SetTopMost(true);
+		GotoPage(BG_MODE::INIT1);
 	}
 	CString retval = "OK";
 	return retval;
@@ -4752,7 +4819,12 @@ CString CGuardianDlg::SocketReceived(CString received)
 
 void CGuardianDlg::OnBnClickedBnNextDisabled()
 {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	// socket 통신이 오지 않더라도 강제로 활성화시킨다.
+	if (m_bgMode == BG_MODE::NONE) {
+		TraceLog(("OnBnClickedBnNextDisabled()"));
+		SetTopMost(true);
+		GotoPage(BG_MODE::INIT1);
+	}
 }
 
 

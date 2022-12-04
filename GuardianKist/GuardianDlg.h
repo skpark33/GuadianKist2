@@ -123,7 +123,8 @@ private:
 
 
 	void	PushMainAlarm(AlarmInfoEle* ele);
-	int		EraseOldMainAlarm(time_t now);
+	//int		EraseOldMainAlarm(time_t now);
+	int		EraseAllMainAlarm();
 	void	EraseLastMainAlarm();
 	void	SetMainAlarmInfo(LPCTSTR szName, LPCTSTR szGrade, LPCTSTR szRoom);
 	void	SetMainAlarmCheckMask(int maskLevel);		// 마스크착용여부 등록
@@ -135,7 +136,8 @@ private:
 	void FRRetryFileDownloadResponse(CString& errMsg);
 
 	int	 LoadRetryImage();
-	int	 EraseOldRetryFaces(time_t now);
+	//int	 EraseOldRetryFaces(time_t now);
+	int	 EraseAllRetryFaces();
 	void DrawRetryFaces(CDC& dc);
 	bool DrawRetryBackground(CDC& dc);
 
@@ -213,7 +215,7 @@ public:
 	CImage*		LoadBackgroundWeather(CString weatherIcon);
 	void		ClearWeaherMap();
 
-	ReinforceFRManager*  m_frManager;
+	//ReinforceFRManager*  m_frManager;
 	bool IsFRRetryType() { return  (m_config->m_use_face && m_config->m_faceApiType == CGuardianConfig::FACE_API_REINFORCE); }
 	bool IsFRWatchType() { return  (m_config->m_use_face && m_config->m_faceApiType == CGuardianConfig::FACE_API_WATCH); }
 
@@ -394,4 +396,6 @@ public:
 	afx_msg void OnBnClickedBnNext();
 
 	afx_msg void OnStnClickedStaticStat();
+	void EraseAllReservedMap();
+
 };

@@ -114,9 +114,11 @@ void decodeQR(cv::Mat& im, std::vector<decodedQR>& decodedObjects)
 void FRRetryProcess(U8* pBuf, long nSize, FRAME_INFO * pFrameInfo)
 {
 	// FRS Timer  0.33 sec
+	//TraceLog(("skpark FRRetryProcess1"));
 	if (((float)g_hikvisionCameraView->m_clkFRRetryCur - (float)g_hikvisionCameraView->m_clkFRRetryStart) < 333.0) {
 		return;
 	}
+	//TraceLog(("skpark FRRetryProcess2"));
 
 	static int s_counter = 0;
 	static CString s_jpgArr[3];
@@ -417,6 +419,8 @@ HikvisionCameraView::HikvisionCameraView()
 	m_thermalY = 0;
 	m_thermalWidth = 0;
 	m_thermalHeight = 0;
+
+	m_clkFRRetryStart = 0;
 }
 
 HikvisionCameraView::~HikvisionCameraView()
