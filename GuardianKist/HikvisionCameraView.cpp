@@ -133,7 +133,7 @@ void FRRetryProcess(U8* pBuf, long nSize, FRAME_INFO * pFrameInfo)
 			iniPath += UBCBRW_INI;
 			char buf[10];
 			memset(buf, 0x00, 10);
-			GetPrivateProfileString("GUARDIAN", "FAIL_RETRY_PICTURE", "1", buf, 10, iniPath);
+			GetPrivateProfileString("GUARDIAN", "FAIL_RETRY_PICTURE", "3", buf, 10, iniPath);
 			retryPictureCount = atof(buf);
 		}
 		if (retryPictureCount > 3) retryPictureCount = 3;

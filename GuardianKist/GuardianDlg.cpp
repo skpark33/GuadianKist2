@@ -521,6 +521,8 @@ BOOL CGuardianDlg::OnInitDialog()
 	//m_btNext.EnableWindow(FALSE);
 
 	AfxBeginThread(CGuardianDlg::StartSocketServer, this);
+
+	SetTopMost(true);
 	
 	return TRUE;
 }
@@ -867,7 +869,7 @@ void CGuardianDlg::OnTimer(UINT nIDEvent)
 
 		if (FRRetry::getInstance()->IsKISTType())
 		{
-			if (FRRetry::getInstance()->IsRunning())
+			if (FRRetry::getInstance()->IsRunning2())
 			{
 				StartAnimation();
 			}
@@ -4782,11 +4784,42 @@ void CGuardianDlg::GotoPage(BG_MODE mode, bool redraw) {
 	if (redraw) Invalidate();
 
 	if (mode == BG_MODE::NEXT) {
-		if (m_socket) {
+		
+		/*if (m_socket) {
 			m_socket->Send(CString("come-on"));
 			GotoPage(BG_MODE::NONE);
 			SetTopMost(false);
 		}
+		*/
+
+		GotoPage(BG_MODE::NONE);
+		SetTopMost(false);
+		
+		list<HWND> handleList;
+		if (getWHandle("chrome.exe", handleList) > 0)
+		{
+			list<HWND>::iterator itr;
+			for (itr = handleList.begin(); itr != handleList.end(); itr++) {
+				HWND hWndPPT = *itr;
+				if (hWndPPT)
+				{
+					::SetWindowPos(hWndPPT, HWND_TOPMOST, -1, -1, -1, -1, SWP_NOSIZE | SWP_NOMOVE);
+					::ShowWindow(hWndPPT, SW_SHOW);
+					::SetForegroundWindow(hWndPPT);
+				}//if
+			}
+		}
+
+
+		//HWND hWndPPT = getWHandle("chrome.exe");
+		//if (hWndPPT)
+		//{
+		//	::SetWindowPos(hWndPPT, HWND_TOPMOST, -1, -1, -1, -1, SWP_NOSIZE | SWP_NOMOVE);
+		//	::ShowWindow(hWndPPT, SW_SHOW);
+		//	::SetForegroundWindow(hWndPPT);
+
+		//}//if
+		
 	}
 }
 
