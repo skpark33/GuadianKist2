@@ -339,7 +339,7 @@ public:
 	CImage*		m_bgFail1;
 	CImage*		m_bgFail2;
 	CImage*		m_bgIdentified;
-	CImage*		m_bgNext;
+	//CImage*		m_bgNext;
 
 	CString		m_bgInitFile1;
 	CString		m_bgInitFile2;
@@ -347,7 +347,7 @@ public:
 	CString		m_bgFailFile1;
 	CString		m_bgFailFile2;
 	CString		m_bgIdentifiedFile;
-	CString		m_bgNextFile;
+	//CString		m_bgNextFile;
 
 	bool _DrawBG(CDC& dc, CImage* image);
 	bool _LoadBG(CString bgFile, CImage*& image);
@@ -358,7 +358,7 @@ public:
 	bool LoadBGFail1();
 	bool LoadBGFail2();
 	bool LoadBGIdentified();
-	bool LoadBGNext();
+	//bool LoadBGNext();
 
 	bool DrawBGInit1(CDC& dc);
 	bool DrawBGInit2(CDC& dc);
@@ -386,7 +386,8 @@ public:
 	int m_modeCheckCounter;
 
 	void GotoPage(BG_MODE mode, bool redraw = true);
-
+	bool IsBgMode(BG_MODE mode);
+	
 	static UINT StartSocketServer(LPVOID pParam);
 	CString SocketReceived(CString received);
 	CSocketServer* m_socket;
@@ -398,4 +399,8 @@ public:
 	afx_msg void OnStnClickedStaticStat();
 	void EraseAllReservedMap();
 
+	bool SendGrade(LPCTSTR grade);
+	void CGuardianDlg::SetChromeTopMost(bool val);
+	
+	CString m_grade;
 };

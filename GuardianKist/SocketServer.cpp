@@ -19,6 +19,8 @@ CSocketServer::CSocketServer(CGuardianDlg* dlg, CString port)
 , m_port(port)
 {
 	ClientSocket = INVALID_SOCKET;
+	ListenSocket = INVALID_SOCKET;
+
 }
 
 CSocketServer::~CSocketServer()
@@ -28,7 +30,7 @@ CSocketServer::~CSocketServer()
 
 int CSocketServer::Start()
 {
-	SOCKET ListenSocket = INVALID_SOCKET;
+	//SOCKET ListenSocket = INVALID_SOCKET;
 	WSADATA wsaData;
 
 	struct addrinfo *result = NULL;
@@ -85,22 +87,21 @@ int CSocketServer::Start()
 	}
 
 	// Accept a client socket
-	ClientSocket = accept(ListenSocket, NULL, NULL);
-	if (ClientSocket == INVALID_SOCKET) {
-		TraceLog(("accept failed with error: %d\n", WSAGetLastError()));
-		closesocket(ListenSocket);
-		WSACleanup();
-		return 1;
-	}
-
-	// No longer need server socket
-	closesocket(ListenSocket);
+	//ClientSocket = accept(ListenSocket, NULL, NULL);
+	//if (ClientSocket == INVALID_SOCKET) {
+	//	TraceLog(("accept failed with error: %d\n", WSAGetLastError()));
+	//	closesocket(ListenSocket);
+	//	WSACleanup();
+	//	return 1;
+	//}
+	//TraceLog(("skpark1 Close socket"));
+	//// No longer need server socket
+	//closesocket(ListenSocket);
 	return 0;
 }
 
 int CSocketServer::Receive()
 {
-	if (ClientSocket == INVALID_SOCKET) return 1;
 
 	int iResult;
 
@@ -108,27 +109,51 @@ int CSocketServer::Receive()
 	char recvbuf[DEFAULT_BUFLEN];
 	int recvbuflen = DEFAULT_BUFLEN;
 
-	do {
-
-		iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-		if (iResult > 0) {
-			TraceLog(("Bytes received: %d\n", iResult));
-
-			CString retval = m_dlg->SocketReceived(CString(recvbuf));
-			Send(retval);
-		
-		}
-		else if (iResult == 0) {
-			TraceLog(("Connection closing...\n"));
-		} 
-		else  {
-			TraceLog(("recv failed with error: %d\n", WSAGetLastError()));
-			closesocket(ClientSocket);
-			WSACleanup();
-			return 1;
+	while (1) {
+		TraceLog(("skpark1 Accept"));
+		ClientSocket = accept(ListenSocket, NULL, NULL);
+		if (ClientSocket == INVALID_SOCKET) {
+			TraceLog(("skpark1 accept failed with error: %d\n", WSAGetLastError()));
+			break;
 		}
 
-	} while (iResult > 0);
+		do {
+			memset(recvbuf, 0x00, DEFAULT_BUFLEN);
+			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+			if (iResult > 0) {
+				TraceLog(("skpark1 Bytes received: %d\n", iResult));
+
+				CString retval = m_dlg->SocketReceived(CString(recvbuf));
+				//Send(retval);
+
+			}
+			else if (iResult == 0) {
+				TraceLog(("skpark1 Connection closing...\n"));
+				break;
+			}
+			else  {
+				TraceLog(("skpark1 recv failed with error: %d\n", WSAGetLastError()));
+				closesocket(ListenSocket);
+				ListenSocket = INVALID_SOCKET;
+				closesocket(ClientSocket);
+				ClientSocket = INVALID_SOCKET;
+				WSACleanup();
+
+				return 0;
+			}
+
+		} while (iResult > 0);
+	}
+
+	TraceLog(("skpark1 Close socket"));
+	// No longer need server socket
+	closesocket(ListenSocket);
+	ListenSocket = INVALID_SOCKET;
+	closesocket(ClientSocket);
+	ClientSocket = INVALID_SOCKET;
+
+	
+	WSACleanup();
 	return 0;
 }
 
@@ -159,6 +184,9 @@ int CSocketServer::Stop()
 		closesocket(ClientSocket);
 		WSACleanup();
 		return 1;
+	}
+	if (ListenSocket != INVALID_SOCKET) {
+		closesocket(ListenSocket);
 	}
 
 	// cleanup

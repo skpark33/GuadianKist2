@@ -216,7 +216,7 @@ CGuardianDlg::CGuardianDlg(CWnd* pParent /*=nullptr*/)
 	, m_bgWait(0)
 	, m_bgFail1(0)
 	, m_bgFail2(0)
-	, m_bgNext(0)
+	//, m_bgNext(0)
 	, m_bgIdentified(0)
 	, m_notice(0)
 	, m_logoW(471)
@@ -229,6 +229,7 @@ CGuardianDlg::CGuardianDlg(CWnd* pParent /*=nullptr*/)
 	, m_bgMode(BG_MODE::INIT1)
 	, m_modeCheckCounter(0)
 	, m_socket(0)
+	, m_grade("")
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -254,7 +255,7 @@ CGuardianDlg::CGuardianDlg(CWnd* pParent /*=nullptr*/)
 	m_bgWaitFile = "wait_bg.png";
 	m_bgFailFile1 = "fail1_bg.png";
 	m_bgFailFile2 = "fail2_bg.png";
-	m_bgNextFile = "next_bg.png";
+	//m_bgNextFile = "next_bg.png";
 	m_bgIdentifiedFile = "identified_bg.png";
 
 	m_logoFile = "customerLogo.png";
@@ -476,7 +477,7 @@ BOOL CGuardianDlg::OnInitDialog()
 	LoadBGWait();
 	LoadBGFail1();
 	LoadBGFail2();
-	LoadBGNext();
+	//LoadBGNext();
 	LoadBGIdentified();
 	//LoadLogo();
 	InitWatch();
@@ -522,6 +523,7 @@ BOOL CGuardianDlg::OnInitDialog()
 
 	AfxBeginThread(CGuardianDlg::StartSocketServer, this);
 
+	SetChromeTopMost(false);
 	SetTopMost(true);
 	
 	return TRUE;
@@ -650,11 +652,11 @@ void CGuardianDlg::Clear()
 		m_bgFail2->Destroy();
 		delete m_bgFail2;
 	}
-	if (m_bgNext)
-	{
-		m_bgNext->Destroy();
-		delete m_bgNext;
-	}
+	//if (m_bgNext)
+	//{
+	//	m_bgNext->Destroy();
+	//	delete m_bgNext;
+	//}
 	if (m_bgIdentified)
 	{
 		m_bgIdentified->Destroy();
@@ -812,7 +814,7 @@ void CGuardianDlg::OnTimer(UINT nIDEvent)
 		}
 		break;
 	case ALARM_CHECK_TIMER: 	// check alarm time
-		TraceLog(("ALARM_CHECK_TIMER(%ul, %d)", now, m_modeCheckCounter));
+		//TraceLog(("ALARM_CHECK_TIMER(%ul, %d)", now, m_modeCheckCounter));
 		if (m_bgMode == BG_MODE::IDENTIFIED) {
 			if (m_modeCheckCounter >= m_config->m_alarmValidSec) {
 				m_modeCheckCounter = 0;
@@ -2362,15 +2364,21 @@ void CGuardianDlg::OnPaint()
 	CBitmap* pOldBitmap = dcMem.SelectObject(&bitmap);
 	// 깜박임 방지 코드 end
 
-	CString aCurrentTemp, aMainAlarmName, aMainAlarmGrade;
-	bool hasName = GetNames(aCurrentTemp, aMainAlarmName, aMainAlarmGrade);
+	CString aCurrentTemp, aMainAlarmName, aMainGrade;
+	bool hasName = GetNames(aCurrentTemp, aMainAlarmName, aMainGrade);
+
+	m_grade = "";
+	if (hasName && !aMainGrade.IsEmpty()) {
+		m_grade = aMainGrade;
+		//TraceLog(("skpark1 m_grade=%s", m_grade));
+	}
 
 	if (m_bgMode == BG_MODE::WAIT && hasName) {
 		TraceLog(("skpark hasName %s", aMainAlarmName));
 		GotoPage(BG_MODE::IDENTIFIED, false);    // BG_MODE::WAIT 
 	}
 
-	DrawBG(dcMem, aCurrentTemp, aMainAlarmName, aMainAlarmGrade);
+	DrawBG(dcMem, aCurrentTemp, aMainAlarmName, m_grade);
 	DrawRetryFaces(dcMem);
 
 
@@ -4521,7 +4529,7 @@ bool CGuardianDlg::LoadBGInit2() { return _LoadBG(m_bgInitFile2, m_bgInit2); }
 bool CGuardianDlg::LoadBGWait() { return _LoadBG(m_bgWaitFile, m_bgWait); }
 bool CGuardianDlg::LoadBGFail1() { return _LoadBG(m_bgFailFile1, m_bgFail1); }
 bool CGuardianDlg::LoadBGFail2() { return _LoadBG(m_bgFailFile2, m_bgFail2); }
-bool CGuardianDlg::LoadBGNext() { return _LoadBG(m_bgNextFile, m_bgNext);  }
+//bool CGuardianDlg::LoadBGNext() { return _LoadBG(m_bgNextFile, m_bgNext);  }
 bool CGuardianDlg::LoadBGIdentified() { return _LoadBG(m_bgIdentifiedFile, m_bgIdentified); }
 
 bool CGuardianDlg::DrawBGInit1(CDC& dc) { return _DrawBG(dc, m_bgInit1); }
@@ -4529,7 +4537,10 @@ bool CGuardianDlg::DrawBGInit2(CDC& dc) { return _DrawBG(dc, m_bgInit2); }
 bool CGuardianDlg::DrawBGWait(CDC& dc) { return _DrawBG(dc, m_bgWait); }
 bool CGuardianDlg::DrawBGFail1(CDC& dc) { return _DrawBG(dc, m_bgFail1); }
 bool CGuardianDlg::DrawBGFail2(CDC& dc) { return _DrawBG(dc, m_bgFail2); }
-bool CGuardianDlg::DrawBGNext(CDC& dc) { return _DrawBG(dc, m_bgNext); }
+bool CGuardianDlg::DrawBGNext(CDC& dc) { 
+	dc.FillSolidRect(0, 0, m_width, m_height, RGB(0xff, 0xff, 0xff));
+	return true; 
+}
 bool CGuardianDlg::DrawBGIdentified(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade)
 { 
 	bool retval = _DrawBG(dc, m_bgIdentified); 
@@ -4657,6 +4668,9 @@ void CGuardianDlg::OnBnClickedBnNext()
 			return;
 		}
 		TraceLog(("human not matched(%d)", itr->first));
+		if (!IsBgMode(BG_MODE::WAIT)) {
+			GotoPage(BG_MODE::WAIT);
+		}
 		FRRetry::getInstance()->Start(this);
 		CString eventId;
 		eventId.Format("[%s_x]", ele->m_eventId.Mid(0, ele->m_eventId.GetLength() - 2));
@@ -4667,7 +4681,9 @@ void CGuardianDlg::OnBnClickedBnNext()
 	m_reservedMap.clear();
 	m_reserved_cs.Unlock();
 
-	GotoPage(BG_MODE::WAIT);
+	if (!IsBgMode(BG_MODE::WAIT)) {
+		GotoPage(BG_MODE::WAIT);
+	}
 }
 
 bool CGuardianDlg::GetNames(CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade)
@@ -4685,7 +4701,7 @@ bool CGuardianDlg::GetNames(CString& pCurrentTemp, CString& pMainAlarmName, CStr
 	}
 
 	// 이름 가운데를  * 로 치환한다.
-	TraceLog(("human = %s, %d grade=%s,", pMainAlarmName, pMainAlarmName.GetLength(), pMainAlarmGrade));
+	//TraceLog(("skpark1 human = %s, %d grade=%s,", pMainAlarmName, pMainAlarmName.GetLength(), pMainAlarmGrade));
 
 	if (pMainAlarmName.GetLength() >= 6) {
 		TraceLog(("human = %s*%s", pMainAlarmName.Mid(0, 2), pMainAlarmName.Mid(4)));
@@ -4779,6 +4795,14 @@ void CGuardianDlg::GotoPage(BG_MODE mode, bool redraw) {
 		EraseAllMainAlarm();
 		EraseAllRetryFaces();
 		EraseAllReservedMap();
+		//m_grade = "";
+	}
+	if (mode != BG_MODE::WAIT) {
+		FRRetry::getInstance()->SetRuningFlag(false);
+	}
+	if (mode == BG_MODE::IDENTIFIED)
+	{
+		EraseAllReservedMap();
 	}
 
 	if (redraw) Invalidate();
@@ -4791,36 +4815,17 @@ void CGuardianDlg::GotoPage(BG_MODE mode, bool redraw) {
 			SetTopMost(false);
 		}
 		*/
+		SendGrade(m_grade);
 
-		GotoPage(BG_MODE::NONE);
 		SetTopMost(false);
-		
-		list<HWND> handleList;
-		if (getWHandle("chrome.exe", handleList) > 0)
-		{
-			list<HWND>::iterator itr;
-			for (itr = handleList.begin(); itr != handleList.end(); itr++) {
-				HWND hWndPPT = *itr;
-				if (hWndPPT)
-				{
-					::SetWindowPos(hWndPPT, HWND_TOPMOST, -1, -1, -1, -1, SWP_NOSIZE | SWP_NOMOVE);
-					::ShowWindow(hWndPPT, SW_SHOW);
-					::SetForegroundWindow(hWndPPT);
-				}//if
-			}
-		}
-
-
-		//HWND hWndPPT = getWHandle("chrome.exe");
-		//if (hWndPPT)
-		//{
-		//	::SetWindowPos(hWndPPT, HWND_TOPMOST, -1, -1, -1, -1, SWP_NOSIZE | SWP_NOMOVE);
-		//	::ShowWindow(hWndPPT, SW_SHOW);
-		//	::SetForegroundWindow(hWndPPT);
-
-		//}//if
-		
+		SetChromeTopMost(true);
+		GotoPage(BG_MODE::NONE);
 	}
+}
+
+bool CGuardianDlg::IsBgMode(BG_MODE mode)
+{
+	return m_bgMode == mode;
 }
 
 UINT CGuardianDlg::StartSocketServer(LPVOID pParam)
@@ -4838,9 +4843,11 @@ UINT CGuardianDlg::StartSocketServer(LPVOID pParam)
 
 CString CGuardianDlg::SocketReceived(CString received)
 {
-	TraceLog(("SocketReceived(%s)", received));
+	TraceLog(("skpark1 SocketReceived(%s)", received));
 
-	if (received == "come-on") {
+	if (received.GetLength() >= 7 && received.Mid(0,7) == "come-on") {
+		TraceLog(("skpark1 SocketReceived(%s)", received));
+		SetChromeTopMost(false);
 		SetTopMost(true);
 		GotoPage(BG_MODE::INIT1);
 	}
@@ -4855,6 +4862,7 @@ void CGuardianDlg::OnBnClickedBnNextDisabled()
 	// socket 통신이 오지 않더라도 강제로 활성화시킨다.
 	if (m_bgMode == BG_MODE::NONE) {
 		TraceLog(("OnBnClickedBnNextDisabled()"));
+		SetChromeTopMost(false);
 		SetTopMost(true);
 		GotoPage(BG_MODE::INIT1);
 	}
@@ -4864,4 +4872,49 @@ void CGuardianDlg::OnBnClickedBnNextDisabled()
 void CGuardianDlg::OnStnClickedStaticStat()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+}
+
+
+bool CGuardianDlg::SendGrade(LPCTSTR grade)
+{
+	//TraceLog(("skpark1 SendGrade(%s)", grade));
+
+	std::string utf8_grade = ASCII2UTF8(grade);
+	std::string base64_grade = ciStringUtil::base64_encode((const unsigned char*)utf8_grade.c_str(), utf8_grade.size());
+
+	CString params = "--location --request POST ";
+	params += "https://localhost:8888/sendApi";
+	params += " --form grade=";
+	params += base64_grade.c_str();
+	
+	TraceLog(("skpark1 SendGrade curl %s", params));
+
+	std::string strRetData = RunCLI(NULL, "curl.exe", params);
+	strRetData = UTF8ToANSIString(strRetData).c_str();
+	TraceLog(("kpark1 SendGrade curl api=%s", strRetData));
+
+	return true;
+}
+
+void CGuardianDlg::SetChromeTopMost(bool val) {
+	list<HWND> handleList;
+	if (getWHandle("chrome.exe", handleList) > 0)
+	{
+		list<HWND>::iterator itr;
+		for (itr = handleList.begin(); itr != handleList.end(); itr++) {
+			HWND hWndPPT = *itr;
+			if (hWndPPT)
+			{
+				if (val) {
+					::SetWindowPos(hWndPPT, HWND_TOPMOST, -1, -1, -1, -1, SWP_NOSIZE | SWP_NOMOVE);
+					::ShowWindow(hWndPPT, SW_SHOW);
+					::SetForegroundWindow(hWndPPT);
+				}
+				else {
+					::SetWindowPos(hWndPPT, HWND_NOTOPMOST, -1, -1, -1, -1, SWP_NOSIZE | SWP_NOMOVE);
+					
+				}
+			}//if
+		}
+	}
 }

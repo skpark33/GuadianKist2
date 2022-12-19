@@ -25,7 +25,10 @@ public:
 	
 protected:
 	SOCKET ClientSocket;
+	SOCKET ListenSocket;
 	CString m_port;
 	CGuardianDlg* m_dlg;
+
+
 
 };
