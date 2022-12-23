@@ -654,6 +654,7 @@
     <Image Include="res\banner.bmp" />
     <Image Include="res\bg.bmp" />
     <Image Include="res\bg.png" />
+    <Image Include="res\bitmap3.bmp" />
     <Image Include="res\btn_Brightness+.bmp" />
     <Image Include="res\btn_Brightness-.bmp" />
     <Image Include="res\btn_Camera_web_page.bmp" />
@@ -674,6 +675,7 @@
     <Image Include="res\btn_Wide_Screen.bmp" />
     <Image Include="res\facing.gif" />
     <Image Include="res\GuardianApp.ico" />
+    <Image Include="res\ignore.bmp" />
     <Image Include="res\nextDisabled.bmp" />
     <Image Include="res\nextEnabled.bmp" />
   </ItemGroup>

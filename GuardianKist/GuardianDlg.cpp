@@ -511,7 +511,7 @@ BOOL CGuardianDlg::OnInitDialog()
 
 	m_btNext.LoadBitmapA(IDB_BITMAP_NEXT_ENABLED, RGB(232, 168, 192));
 	m_btNextDisabled.LoadBitmapA(IDB_BITMAP_NEXT_DISABLED, RGB(232, 168, 192));
-	m_btIgnore.LoadBitmapA(IDB_BITMAP_NEXT_ENABLED, RGB(232, 168, 192));
+	m_btIgnore.LoadBitmapA(IDB_BITMAP_IGNORE, RGB(232, 168, 192));
 
 	CRect nextRect;
 	m_btNext.GetWindowRect(&nextRect);
