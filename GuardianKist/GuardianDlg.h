@@ -403,4 +403,6 @@ public:
 	void CGuardianDlg::SetChromeTopMost(bool val);
 	
 	CString m_grade;
+	afx_msg void OnBnClickedBnIgnore();
+	CHoverButton m_btIgnore;
 };

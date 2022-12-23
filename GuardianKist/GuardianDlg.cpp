@@ -272,6 +272,7 @@ void CGuardianDlg::DoDataExchange(CDataExchange* pDX)
 	//DDX_Control(pDX, IDC_BG_PICTURE_CTRL, m_bgPic);
 	DDX_Control(pDX, ID_BN_CLEAR2, m_btNext);
 	DDX_Control(pDX, IDOK, m_btNextDisabled);
+	DDX_Control(pDX, ID_BN_IGNORE, m_btIgnore);
 }
 
 BEGIN_MESSAGE_MAP(CGuardianDlg, CDialogEx)
@@ -293,6 +294,7 @@ BEGIN_MESSAGE_MAP(CGuardianDlg, CDialogEx)
 	ON_BN_CLICKED(ID_BN_CLEAR2, &CGuardianDlg::OnBnClickedBnNext)
 	ON_BN_CLICKED(IDOK, &CGuardianDlg::OnBnClickedBnNextDisabled)
 	ON_STN_CLICKED(IDC_STATIC_STAT, &CGuardianDlg::OnStnClickedStaticStat)
+	ON_BN_CLICKED(ID_BN_IGNORE, &CGuardianDlg::OnBnClickedBnIgnore)
 END_MESSAGE_MAP()
 
 
@@ -509,6 +511,7 @@ BOOL CGuardianDlg::OnInitDialog()
 
 	m_btNext.LoadBitmapA(IDB_BITMAP_NEXT_ENABLED, RGB(232, 168, 192));
 	m_btNextDisabled.LoadBitmapA(IDB_BITMAP_NEXT_DISABLED, RGB(232, 168, 192));
+	m_btIgnore.LoadBitmapA(IDB_BITMAP_NEXT_ENABLED, RGB(232, 168, 192));
 
 	CRect nextRect;
 	m_btNext.GetWindowRect(&nextRect);
@@ -517,6 +520,12 @@ BOOL CGuardianDlg::OnInitDialog()
 
 	m_btNextDisabled.MoveWindow((m_width - nextRect.Width()) / 2, m_videoEnd + 130, nextRect.Width(), nextRect.Height());
 	m_btNextDisabled.ShowWindow(SW_SHOW);
+
+	CRect ignoreRect;
+	m_btIgnore.GetWindowRect(&ignoreRect);
+	m_btIgnore.MoveWindow((m_width - ignoreRect.Width()) / 2, m_videoEnd + 130 + 330, ignoreRect.Width(), ignoreRect.Height());
+	m_btIgnore.ShowWindow(SW_HIDE);
+
 
 
 	//m_btNext.EnableWindow(FALSE);
@@ -859,7 +868,7 @@ void CGuardianDlg::OnTimer(UINT nIDEvent)
 			}
 		}
 		else if (m_bgMode == BG_MODE::FAIL2) {
-			if (m_modeCheckCounter >= m_config->m_alarmValidSec) {
+			if (m_modeCheckCounter >= m_config->m_alarmValidSec + 1) {
 				m_modeCheckCounter = 0;
 				GotoPage(BG_MODE::INIT1);
 			}
@@ -4586,15 +4595,23 @@ bool CGuardianDlg::DrawBG(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmNam
 	if (m_bgMode == BG_MODE::INIT2) {
 		m_btNext.ShowWindow(SW_SHOW);
 		m_btNextDisabled.ShowWindow(SW_HIDE);
+		m_btIgnore.ShowWindow(SW_HIDE);
 	}
 	else if (m_bgMode == BG_MODE::WAIT || m_bgMode == BG_MODE::INIT1 || m_bgMode == BG_MODE:: NONE || m_bgMode == BG_MODE::FAIL1)
 	{
 		m_btNext.ShowWindow(SW_HIDE);
 		m_btNextDisabled.ShowWindow(SW_SHOW);
+		m_btIgnore.ShowWindow(SW_HIDE);
+	}
+	else if (m_bgMode == BG_MODE::FAIL2) {
+		m_btNext.ShowWindow(SW_HIDE);
+		m_btNextDisabled.ShowWindow(SW_HIDE);
+		m_btIgnore.ShowWindow(SW_SHOW);
 	}
 	else {
 		m_btNext.ShowWindow(SW_HIDE);
 		m_btNextDisabled.ShowWindow(SW_HIDE);
+		m_btIgnore.ShowWindow(SW_HIDE);
 	}
 
 
@@ -4690,11 +4707,11 @@ void CGuardianDlg::OnBnClickedBnNext()
 		TraceLog(("human not matched(%d)", itr->first));
 		if (!IsBgMode(BG_MODE::WAIT)) {
 			GotoPage(BG_MODE::WAIT);
+			FRRetry::getInstance()->Start(this);
+			CString eventId;
+			eventId.Format("[%s_x]", ele->m_eventId.Mid(0, ele->m_eventId.GetLength() - 2));
+			FRRetry::getInstance()->PushEventQ(eventId, (ele->m_alarmLevel == 1), atof(ele->m_currentTemp));
 		}
-		FRRetry::getInstance()->Start(this);
-		CString eventId;
-		eventId.Format("[%s_x]", ele->m_eventId.Mid(0, ele->m_eventId.GetLength() - 2));
-		FRRetry::getInstance()->PushEventQ(eventId, (ele->m_alarmLevel == 1), atof(ele->m_currentTemp));
 		m_cs.Unlock();
 	}
 
@@ -4937,4 +4954,10 @@ void CGuardianDlg::SetChromeTopMost(bool val) {
 			}//if
 		}
 	}
+}
+
+void CGuardianDlg::OnBnClickedBnIgnore()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	GotoPage(BG_MODE::NEXT);
 }
