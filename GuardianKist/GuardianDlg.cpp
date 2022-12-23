@@ -4611,13 +4611,15 @@ bool CGuardianDlg::AreYouReady()
 		return false;
 	}
 
-	m_reserved_cs.Lock();
-	if (m_reservedMap.size() > 0) {
-		m_reserved_cs.Unlock();
-		return true;
-	}
-	m_reserved_cs.Unlock();
-	return false;
+	return true;
+
+	//m_reserved_cs.Lock();
+	//if (m_reservedMap.size() > 0) {
+	//	m_reserved_cs.Unlock();
+	//	return true;
+	//}
+	//m_reserved_cs.Unlock();
+	//return false;
 }
 
 void CGuardianDlg::OnBnClickedBnNext()
@@ -4646,6 +4648,24 @@ void CGuardianDlg::OnBnClickedBnNext()
 			return;
 		}
 		m_cs.Unlock();
+	}
+
+	if (m_reservedMap.empty()) {
+		if (!IsBgMode(BG_MODE::WAIT)) {
+			GotoPage(BG_MODE::WAIT);
+		}
+		FRRetry::getInstance()->Start(this);
+		SYSTEMTIME t;
+		GetLocalTime(&t);
+		char chTime[128];
+		memset(chTime, 0x00, 128);
+		sprintf(chTime, "%4.4d%2.2d%2.2d%2.2d%2.2d%2.2d_%3.3d",
+			t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
+		CString eventId;
+		eventId.Format("[%s_x]", chTime);
+		FRRetry::getInstance()->PushEventQ(eventId, false, 36.5);
+		m_reserved_cs.Unlock();
+		return;
 	}
 
 	for (itr = m_reservedMap.begin(); itr != m_reservedMap.end(); itr++) {
