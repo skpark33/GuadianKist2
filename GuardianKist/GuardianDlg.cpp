@@ -230,6 +230,8 @@ CGuardianDlg::CGuardianDlg(CWnd* pParent /*=nullptr*/)
 	, m_modeCheckCounter(0)
 	, m_socket(0)
 	, m_grade("")
+	, m_room("")
+	, m_etc("")
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -1995,7 +1997,7 @@ void CGuardianDlg::EraseAll()
 	m_cs.Unlock();
 }
 
-void CGuardianDlg::SetMainAlarmInfo(LPCTSTR szName, LPCTSTR szGrade, LPCTSTR szRoom)
+void CGuardianDlg::SetMainAlarmInfo(LPCTSTR szName, LPCTSTR szGrade, LPCTSTR szRoom, LPCTSTR szEtc)
 {
 	//	TraceLog(("SetMainAlarmInfo(%s)=%d  시작", szName, m_currentMainAlarmIdx));
 	m_cs.Lock();
@@ -2005,6 +2007,7 @@ void CGuardianDlg::SetMainAlarmInfo(LPCTSTR szName, LPCTSTR szGrade, LPCTSTR szR
 		aInfo->m_humanName = szName;
 		aInfo->m_grade = szGrade;
 		aInfo->m_room = szRoom;
+		aInfo->m_etc = szEtc;
 		TraceLog(("skparkAPI SetMainAlarmInfo(%s, %s, mask=%d, alarm=%d)", aInfo->m_eventId, aInfo->m_humanName, aInfo->m_maskLevel, aInfo->m_alarmLevel))
 	}
 	m_cs.Unlock();
@@ -2373,21 +2376,26 @@ void CGuardianDlg::OnPaint()
 	CBitmap* pOldBitmap = dcMem.SelectObject(&bitmap);
 	// 깜박임 방지 코드 end
 
-	CString aCurrentTemp, aMainAlarmName, aMainGrade;
-	bool hasName = GetNames(aCurrentTemp, aMainAlarmName, aMainGrade);
+	CString aCurrentTemp, aMainAlarmName, aMainGrade, aRoom, aEtc;
+	bool hasName = GetNames(aCurrentTemp, aMainAlarmName, aMainGrade, aRoom, aEtc);
 
 	m_grade = "";
 	if (hasName && !aMainGrade.IsEmpty()) {
 		m_grade = aMainGrade;
 		//TraceLog(("skpark1 m_grade=%s", m_grade));
 	}
-
+	m_room = "";
+	if (hasName && !aRoom.IsEmpty()) {
+		m_room = aRoom;
+		//TraceLog(("skpark1 m_grade=%s", m_grade));
+	}
+	
 	if (m_bgMode == BG_MODE::WAIT && hasName) {
 		TraceLog(("skpark hasName %s", aMainAlarmName));
 		GotoPage(BG_MODE::IDENTIFIED, false);    // BG_MODE::WAIT 
 	}
 
-	DrawBG(dcMem, aCurrentTemp, aMainAlarmName, m_grade);
+	DrawBG(dcMem, aCurrentTemp, aMainAlarmName, m_grade, m_room);
 	DrawRetryFaces(dcMem);
 
 
@@ -2955,7 +2963,7 @@ bool CGuardianDlg::ParseResult(bool& isMainAlarm, bool& maskFace, CString& face_
 	}
 
 	bool retval = false;
-	CString strName, strScore, strGrade, strRoom;
+	CString strName, strScore, strGrade, strRoom, strEtc;
 
 	int dataLength = cJSON_GetArraySize(jsonList);
 	for (int i = 0; i < dataLength; i++)
@@ -2998,6 +3006,13 @@ bool CGuardianDlg::ParseResult(bool& isMainAlarm, bool& maskFace, CString& face_
 		{
 			strRoom = room->valuestring;
 		}
+		cJSON *etc = cJSON_GetObjectItem(data, "etc");
+		if (etc != NULL)
+		{
+			strEtc = etc->valuestring;
+		}
+
+
 		float fscore = score->valuedouble;
 		if (fscore < m_config->m_face_score_limit)
 		{
@@ -3007,8 +3022,8 @@ bool CGuardianDlg::ParseResult(bool& isMainAlarm, bool& maskFace, CString& face_
 			retval = false;
 			TraceLog(("found but too low score(%f,%s)", fscore, strName));
 		}
-		SetMainAlarmInfo(strName, strGrade, strRoom);
-		TraceLog(("face_api_result >>> name(%s) grade(%s)  room(%s)", strName, strGrade, strRoom));
+		SetMainAlarmInfo(strName, strGrade, strRoom, strEtc);
+		TraceLog(("face_api_result >>> name(%s) grade(%s)  room(%s)", strName, strGrade, strRoom, strEtc));
 	}
 	cJSON_Delete(root);
 	return retval;
@@ -4550,12 +4565,17 @@ bool CGuardianDlg::DrawBGNext(CDC& dc) {
 	dc.FillSolidRect(0, 0, m_width, m_height, RGB(0xff, 0xff, 0xff));
 	return true; 
 }
-bool CGuardianDlg::DrawBGIdentified(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade)
+bool CGuardianDlg::DrawBGIdentified(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade, CString& pRoom)
 { 
 	bool retval = _DrawBG(dc, m_bgIdentified); 
+	CString remark = pRoom;
+	if (!remark.IsEmpty()) {
+		remark += " ";
+	}
+	remark += pMainAlarmGrade;
 	TraceLog(("DrawBGIdentified(%s, %d)", pMainAlarmName, m_videoTop + m_videoHeight + 400));
 	WriteSingleLine(pMainAlarmName, &dc, m_alarmFont5, RGB(0x11, 0x11, 0x11), m_videoTop + m_videoHeight + 300, 64, DT_LEFT, 190, 700);
-	WriteSingleLine(pMainAlarmGrade, &dc, m_alarmFont6, RGB(0x11, 0x11, 0x11), m_videoTop + m_videoHeight + 392, 48, DT_LEFT, 190, 700);
+	WriteSingleLine(remark, &dc, m_alarmFont6, RGB(0x11, 0x11, 0x11), m_videoTop + m_videoHeight + 392, 48, DT_LEFT, 190, 700);
 
 	return retval;
 }
@@ -4577,7 +4597,7 @@ void CGuardianDlg::EraseAllReservedMap()
 	m_reserved_cs.Unlock();
 }
 
-bool CGuardianDlg::DrawBG(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade)
+bool CGuardianDlg::DrawBG(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade, CString& pRoom)
 {
 
 	switch (m_bgMode) {
@@ -4588,7 +4608,7 @@ bool CGuardianDlg::DrawBG(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmNam
 	case BG_MODE::FAIL1:   DrawBGFail1(dc); break;
 	case BG_MODE::FAIL2:   DrawBGFail2(dc); break;
 	case BG_MODE::NEXT:   DrawBGNext(dc);  break;
-	case BG_MODE::IDENTIFIED:   DrawBGIdentified(dc, pCurrentTemp, pMainAlarmName, pMainAlarmGrade); break;
+	case BG_MODE::IDENTIFIED:   DrawBGIdentified(dc, pCurrentTemp, pMainAlarmName, pMainAlarmGrade, pRoom); break;
 	default: DrawBGInit1(dc);
 	}
 
@@ -4723,17 +4743,17 @@ void CGuardianDlg::OnBnClickedBnNext()
 	}
 }
 
-bool CGuardianDlg::GetNames(CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade)
+bool CGuardianDlg::GetNames(CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade, CString& pRoom, CString& pEtc)
 {
 	DRAW_FACE_MAP humanMap;
 	int imageCount = GetMainAlarmImageInfoList(humanMap);
 	bool hasName = false;
 	
-	hasName = _GetNames(humanMap, pCurrentTemp, pMainAlarmName, pMainAlarmGrade);
+	hasName = _GetNames(humanMap, pCurrentTemp, pMainAlarmName, pMainAlarmGrade, pRoom, pEtc);
 	if (!hasName)
 	{
 		m_retry_cs.Lock();
-		hasName = _GetNames(m_retrylFaces, pCurrentTemp, pMainAlarmName, pMainAlarmGrade);
+		hasName = _GetNames(m_retrylFaces, pCurrentTemp, pMainAlarmName, pMainAlarmGrade, pRoom, pEtc);
 		m_retry_cs.Unlock();
 	}
 
@@ -4764,18 +4784,18 @@ bool CGuardianDlg::HasNames()
 	DRAW_FACE_MAP humanMap;
 	int imageCount = GetMainAlarmImageInfoList(humanMap);
 	bool hasName = false;
-	CString pCurrentTemp, pMainAlarmName, pMainAlarmGrade;
-	hasName = _GetNames(humanMap, pCurrentTemp, pMainAlarmName, pMainAlarmGrade);
+	CString pCurrentTemp, pMainAlarmName, pMainAlarmGrade, pRoom, pEtc;
+	hasName = _GetNames(humanMap, pCurrentTemp, pMainAlarmName, pMainAlarmGrade, pRoom, pEtc);
 	if (!hasName)
 	{
 		m_retry_cs.Lock();
-		hasName = _GetNames(m_retrylFaces, pCurrentTemp, pMainAlarmName, pMainAlarmGrade);
+		hasName = _GetNames(m_retrylFaces, pCurrentTemp, pMainAlarmName, pMainAlarmGrade, pRoom, pEtc);
 		m_retry_cs.Unlock();
 
 	}
 	return hasName;
 }
-bool CGuardianDlg::_GetNames(DRAW_FACE_MAP& humanMap, CString& pCurrentTemp,CString& pMainAlarmName,CString& pMainAlarmGrade)
+bool CGuardianDlg::_GetNames(DRAW_FACE_MAP& humanMap, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade, CString& pRoom, CString& pEtc)
 {
 	DRAW_FACE_MAP::iterator itr;
 	int len = humanMap.size();
@@ -4816,7 +4836,9 @@ bool CGuardianDlg::_GetNames(DRAW_FACE_MAP& humanMap, CString& pCurrentTemp,CStr
 		}
 		pCurrentTemp = ele->m_currentTemp;
 		pMainAlarmName = ele->m_humanName;
-		pMainAlarmGrade = ele->m_grade ;
+		pMainAlarmGrade = ele->m_grade;
+		pRoom = ele->m_room;
+		pEtc = ele->m_etc;
 		TraceLog(("show name (%s)", pMainAlarmName));
 
 		return true;
@@ -4852,7 +4874,7 @@ void CGuardianDlg::GotoPage(BG_MODE mode, bool redraw) {
 			SetTopMost(false);
 		}
 		*/
-		SendGrade(m_grade);
+		SendGrade(m_grade, m_room, m_etc);
 
 		SetTopMost(false);
 		SetChromeTopMost(true);
@@ -4912,18 +4934,28 @@ void CGuardianDlg::OnStnClickedStaticStat()
 }
 
 
-bool CGuardianDlg::SendGrade(LPCTSTR grade)
+bool CGuardianDlg::SendGrade(LPCTSTR grade, LPCTSTR room, LPCTSTR etc)
 {
 	//TraceLog(("skpark1 SendGrade(%s)", grade));
 
 	std::string utf8_grade = ASCII2UTF8(grade);
 	std::string base64_grade = ciStringUtil::base64_encode((const unsigned char*)utf8_grade.c_str(), utf8_grade.size());
 
+	std::string utf8_room = ASCII2UTF8(room);
+	std::string base64_room = ciStringUtil::base64_encode((const unsigned char*)utf8_room.c_str(), utf8_room.size());
+
+	std::string utf8_etc = ASCII2UTF8(etc);
+	std::string base64_etc = ciStringUtil::base64_encode((const unsigned char*)utf8_etc.c_str(), utf8_etc.size());
+
 	CString params = "--location --request POST ";
 	params += "https://localhost:8888/sendApi";
 	params += " --form grade=";
 	params += base64_grade.c_str();
-	
+	params += " --form room=";
+	params += base64_room.c_str();
+	params += " --form etc=";
+	params += base64_etc.c_str();
+
 	TraceLog(("skpark1 SendGrade curl %s", params));
 
 	std::string strRetData = RunCLI(NULL, "curl.exe", params);

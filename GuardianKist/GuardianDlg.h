@@ -126,7 +126,7 @@ private:
 	//int		EraseOldMainAlarm(time_t now);
 	int		EraseAllMainAlarm();
 	void	EraseLastMainAlarm();
-	void	SetMainAlarmInfo(LPCTSTR szName, LPCTSTR szGrade, LPCTSTR szRoom);
+	void	SetMainAlarmInfo(LPCTSTR szName, LPCTSTR szGrade, LPCTSTR szRoom, LPCTSTR szEtc);
 	void	SetMainAlarmCheckMask(int maskLevel);		// 마스크착용여부 등록
 	void	SetMainAlarmImage(CImage* pImage);
 	bool	GetLastMainAlarmInfo(CString& outTemperature, CString& outName, bool& isFever, int& nMaskLevel);
@@ -365,7 +365,7 @@ public:
 	bool DrawBGWait(CDC& dc);
 	bool DrawBGFail1(CDC& dc);
 	bool DrawBGFail2(CDC& dc);
-	bool DrawBGIdentified(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade);
+	bool DrawBGIdentified(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade, CString& pRoom);
 	bool DrawBGNext(CDC& dc);
 
 	RESERVED_MAP  m_reservedMap;  // new KIST 
@@ -375,13 +375,13 @@ public:
 
 	BG_MODE  m_bgMode;
 
-	bool DrawBG(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade);
+	bool DrawBG(CDC& dc, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade, CString& pRoom);
 
 	bool AreYouReady();
 
-	bool GetNames(CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade);
+	bool GetNames(CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade, CString& pRoom, CString& pEtc);
 	bool HasNames();
-	bool _GetNames(DRAW_FACE_MAP& humanMap, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade);
+	bool _GetNames(DRAW_FACE_MAP& humanMap, CString& pCurrentTemp, CString& pMainAlarmName, CString& pMainAlarmGrade,  CString& pRoom, CString& pEtc);
 
 	int m_modeCheckCounter;
 
@@ -399,10 +399,12 @@ public:
 	afx_msg void OnStnClickedStaticStat();
 	void EraseAllReservedMap();
 
-	bool SendGrade(LPCTSTR grade);
+	bool SendGrade(LPCTSTR grade, LPCTSTR room, LPCTSTR etc);
 	void CGuardianDlg::SetChromeTopMost(bool val);
 	
 	CString m_grade;
+	CString m_room;
+	CString m_etc;
 	afx_msg void OnBnClickedBnIgnore();
 	CHoverButton m_btIgnore;
 };
